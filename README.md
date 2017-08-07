@@ -93,39 +93,110 @@ vagrant init centos/7
 vagrant up
 ```
 
-Install Docker/Moby
 
-First, connect to the VM with `vagrant ssh`. The following commands will be run in the Centos VM over SSH.
+This also has Vagrant provisioner steps to:
 
-```bash
-sudo yum install docker
-sudo systemctl start docker
-sudo docker version
-sudo systemctl enable docker
-```
+- Install docker from Centos package repo
+- Install latest versions of kubectl & kubeadm from Kubernetes package repo
 
 > TODO: this gets docker-1.12.6-32.git88a4867.el7.centos.x86_64 - good/bad?
 
 
+### Starting the Kubernetes master
 
+This has been adapted from the [official guide](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/)
 
-
-Run these in containers:
-
-- kubernetes-apiserver
-- kubernetes-controller-manager
-- kubernetes-scheduler
+The next commands will be run in the Centos VM. Run `vagrant ssh` before continuing
 
 ```bash
-chmod +x register-k8s.sh
-sudo ./register-k8s.sh
-sudo systemctl start kube-controller-manager
-sudo systemctl start kube-scheduler
-sudo systemctl start kube-apiserver
+sudo kubeadm init
+```
+
+```none
+[vagrant@localhost ~]$ kubeadm init
+[kubeadm] WARNING: kubeadm is in beta, please do not use it for production clusters.
+[init] Using Kubernetes version: v1.7.3
+[init] Using Authorization modes: [Node RBAC]
+[preflight] Running pre-flight checks
+[preflight] Some fatal errors occurred:
+        user is not running as root
+[preflight] If you know what you are doing, you can skip pre-flight checks with `--skip-preflight-checks`
+[vagrant@localhost ~]$ sudo kubeadm init
+[kubeadm] WARNING: kubeadm is in beta, please do not use it for production clusters.
+[init] Using Kubernetes version: v1.7.3
+[init] Using Authorization modes: [Node RBAC]
+[preflight] Running pre-flight checks
+[kubeadm] WARNING: starting in 1.8, tokens expire after 24 hours by default (if you require a non-expiring token use --token-ttl 0)
+[certificates] Generated CA certificate and key.
+[certificates] Generated API server certificate and key.
+[certificates] API Server serving cert is signed for DNS names [localhost.localdomain kubernetes kubernetes.default kubernetes.default.
+svc kubernetes.default.svc.cluster.local] and IPs [10.96.0.1 192.168.1.159]
+[certificates] Generated API server kubelet client certificate and key.
+[certificates] Generated service account token signing key and public key.
+[certificates] Generated front-proxy CA certificate and key.
+[certificates] Generated front-proxy client certificate and key.
+[certificates] Valid certificates and keys now exist in "/etc/kubernetes/pki"
+[kubeconfig] Wrote KubeConfig file to disk: "/etc/kubernetes/controller-manager.conf"
+[kubeconfig] Wrote KubeConfig file to disk: "/etc/kubernetes/scheduler.conf"
+[kubeconfig] Wrote KubeConfig file to disk: "/etc/kubernetes/admin.conf"
+[kubeconfig] Wrote KubeConfig file to disk: "/etc/kubernetes/kubelet.conf"
+[apiclient] Created API client, waiting for the control plane to become ready
+[apiclient] All control plane components are healthy after 66.029744 seconds
+[token] Using token: 11e173.294ee115d41e8df3
+[apiconfig] Created RBAC rules
+[addons] Applied essential addon: kube-proxy
+[addons] Applied essential addon: kube-dns
+
+Your Kubernetes master has initialized successfully!
+
+To start using your cluster, you need to run (as a regular user):
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  http://kubernetes.io/docs/admin/addons/
+
+You can now join any number of machines by running the following on each node
+as root:
+
+  kubeadm join --token 11e173.294ee115d41e8df3 192.168.1.159:6443
+```
+
+There are two important areas you need to save for later:
+
+- The kube config
+- The kubeadm join line
+
+First, get a copy of the kubeadm config into your home directory in the Centos VM:
+
+```bash
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
+And confirm it works inside the Centos VM with `kubectl get node`
+
+```none
+[vagrant@localhost ~]$ kubectl get node
+NAME                    STATUS     AGE       VERSION
+localhost.localdomain   NotReady   32m       v1.7.3
 ```
 
 
-Info from [link](https://wiki.centos.org/SpecialInterestGroup/Atomic/ContainerizedMaster)
+### Managing the Kubernetes cluster from Windows
+
+Now, get the config file needed out of the VM and onto your Windows machine
+
+```powershell
+mkdir ~/.kube
+vagrant ssh -c 'cat ~/.kube/config' default | out-file ~/.kube/config
+```
+
+
 
 
 ### Joining the Windows node

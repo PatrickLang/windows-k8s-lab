@@ -26,7 +26,9 @@ Vagrant.configure("2") do |config|
     rsync__exclude: ".git/"
 
   config.vm.provision "shell", path: "install-docker.sh"
-  config.vm.provision "shell", path: "register-k8s.sh"
+  config.vm.provision "shell", path: "install-k8s.sh"
+  
+  #config.vm.provision "shell", path: "register-k8s.sh"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
