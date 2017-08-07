@@ -196,6 +196,15 @@ mkdir ~/.kube
 vagrant ssh -c 'cat ~/.kube/config' default | out-file ~/.kube/config
 ```
 
+> TODO not working. hmm...
+
+
+
+### Enable containers to run on master
+
+This is a bad idea from a security standpoint.
+
+`kubectl taint nodes --all node-role.kubernetes.io/master-`
 
 
 
