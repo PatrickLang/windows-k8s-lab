@@ -208,10 +208,11 @@ mkdir ~/.kube
 vagrant ssh -c 'cat ~/.kube/config' default | out-file ~/.kube/config -encoding ascii
 ```
 
-
-
+Now, `kubectl get node` should succeed.
 
 ### Enable containers to run on master
+
+> Work in progress
 
 This is a bad idea from a security standpoint.
 
@@ -220,6 +221,8 @@ This is a bad idea from a security standpoint.
 
 
 ### Joining the Windows node
+
+> Work in progress
 
 Steps to be adapted from https://kubernetes.io/docs/getting-started-guides/windows/ or https://github.com/apprenda/kubernetes-ovn-heterogeneous-cluster
 
