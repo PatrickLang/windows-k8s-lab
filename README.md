@@ -4,6 +4,8 @@
 
 ## Building a 1-node Linux-based cluster with Minikube on Windows 10
 
+Minikube sets up a quick 1-node Linux-only Kubernetes cluster in a VM. However, it can't add other nodes such as a Windows host. If you just want to run a few Linux containers to try Kubernetes out, this is a good way to start.
+
 Download links & Quickstart at https://github.com/kubernetes/minikube
 
 
@@ -98,22 +100,19 @@ This also has Vagrant provisioner steps to:
 
 - Install docker from Centos package repo
 - Install latest versions of kubectl & kubeadm from Kubernetes package repo
+- Initialize a simple cluster with `kubeadm init`
 
 > TODO: this gets docker-1.12.6-32.git88a4867.el7.centos.x86_64 - good/bad?
 
 
 ### Starting the Kubernetes master
 
-This has been adapted from the [official guide](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/)
+The last provisioner step in the `Vagrantfile` runs `install-k8s.sh` which will install all the packages and create a Kubernetes master. These steps were adapted from the [official guide](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/)
 
-The next commands will be run in the Centos VM. Run `vagrant ssh` before continuing
+After you've run `vagrant up` or `vagrant provision` - the last step will look something like this:
 
-```bash
-sudo kubeadm init
-```
 
 ```none
-[vagrant@localhost ~]$ kubeadm init
 [kubeadm] WARNING: kubeadm is in beta, please do not use it for production clusters.
 [init] Using Kubernetes version: v1.7.3
 [init] Using Authorization modes: [Node RBAC]
@@ -170,7 +169,7 @@ There are two important areas you need to save for later:
 - The kube config
 - The kubeadm join line
 
-First, get a copy of the kubeadm config into your home directory in the Centos VM:
+First, get a copy of the kubeadm config into your home directory in the Centos VM. Connect with `vagrant ssh` for the next step
 
 ```bash
 mkdir -p $HOME/.kube
