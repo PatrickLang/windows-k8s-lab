@@ -6,7 +6,7 @@
 
 Minikube sets up a quick 1-node Linux-only Kubernetes cluster in a VM. However, it can't add other nodes such as a Windows host. If you just want to run a few Linux containers to try Kubernetes out, this is a good way to start.
 
-Download links & Quickstart at https://github.com/kubernetes/minikube
+The download links & full guide are at https://github.com/kubernetes/minikube , but here's a brief summary.
 
 
 ### Starting up Minikube
@@ -87,6 +87,14 @@ Once you have some of the basics down with Kubernetes, it's time to build a larg
 ![2 node diagram](images/2node-diagram.png)
 
 This tutorial will create a Kubernetes master running in a Linux VM, which can also be used to run containers. Once the master is up, the Windows host will be added to the same cluster. The same steps could be used to join other existing machines as well, or you could create even more VMs to join as needed.
+
+
+### Prerequisites
+
+- Windows 10 Anniversary Update, Windows Server 2016 or later
+- Hyper-V role installed - [Quick Start here](https://docs.microsoft.com/en-us/virtualization/#pivot=main&panel=windows)
+- [Vagrant](https://www.vagrantup.com/downloads.html) 1.9.3 or later for Windows 64-bit
+
 
 
 ### Setting up the Linux master with Centos 7
