@@ -205,10 +205,9 @@ Now, get the config file needed out of the VM and onto your Windows machine
 
 ```powershell
 mkdir ~/.kube
-vagrant ssh -c 'cat ~/.kube/config' default | out-file ~/.kube/config
+vagrant ssh -c 'cat ~/.kube/config' default | out-file ~/.kube/config -encoding ascii
 ```
 
-> TODO not working. hmm...
 
 
 
