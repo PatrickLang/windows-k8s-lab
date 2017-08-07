@@ -14,6 +14,20 @@ Vagrant.configure("2") do |config|
   # boxes at https://vagrantcloud.com/search.
   config.vm.box = "centos/7"
 
+
+  config.vm.provider "hyperv" do |hv|
+    hv.vmname = "K8s-master"
+    hv.memory=1024
+    hv.maxmemory=2048
+    hv.cpus=2
+  end
+
+  config.vm.synced_folder ".", "/vagrant", type: "rsync",
+    rsync__exclude: ".git/"
+
+  config.vm.provision "shell", path: "install-docker.sh"
+  config.vm.provision "shell", path: "register-k8s.sh"
+
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.
