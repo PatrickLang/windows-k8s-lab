@@ -201,12 +201,15 @@ localhost.localdomain   NotReady   32m       v1.7.3
 
 ### Managing the Kubernetes cluster from Windows
 
-Now, get the config file needed out of the VM and onto your Windows machine
+Now, it's time to get the config file needed out of the VM and onto your Windows machine
 
 ```powershell
 mkdir ~/.kube
 vagrant ssh -c 'cat ~/.kube/config' default | out-file ~/.kube/config -encoding ascii
 ```
+
+> TODO download kubectl & put in path
+
 
 Now, `kubectl get node` should succeed.
 
