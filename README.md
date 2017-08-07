@@ -82,6 +82,11 @@ PS 08/05/2017 16:22:01 C:\minikube
 
 ## Building a 2 node Windows/Linux cluster
 
+Once you have some of the basics down with Kubernetes, it's time to build a larger cluster with both Windows & Linux nodes.
+
+![2 node diagram](images/2node-diagram.png)
+
+This tutorial will create a Kubernetes master running in a Linux VM, which can also be used to run containers. Once the master is up, the Windows host will be added to the same cluster. The same steps could be used to join other existing machines as well, or you could create even more VMs to join as needed.
 
 
 ### Setting up the Linux master with Centos 7
