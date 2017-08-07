@@ -17,9 +17,10 @@ Vagrant.configure("2") do |config|
 
   config.vm.provider "hyperv" do |hv|
     hv.vmname = "K8s-master"
-    hv.memory=1024
-    hv.maxmemory=2048
-    hv.cpus=2
+    hv.memory = 1024
+    hv.maxmemory = 2048
+    hv.cpus = 2
+    hv.differencing_disk = true
   end
 
   config.vm.synced_folder ".", "/vagrant", type: "rsync",
