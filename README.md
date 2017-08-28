@@ -215,13 +215,30 @@ Now, `kubectl get node` should succeed.
 
 ### Enable containers to run on master
 
-> Work in progress
+By default, master nodes are `taint`ed so that other containers won't run on them. Running arbitrary code on a master node is a bad idea because in the case of a container break-out exploit, the attacker would have access to the Kubernetes master and therefore owns the whole cluster.
 
-This is a bad idea from a security standpoint.
+Caveats aside - you can remove this taint and run containers on the master. This makes things a bit easier when you're just running a test VM that's not exposed on the internet.
 
 `kubectl taint nodes --all node-role.kubernetes.io/master-`
 
+Now, verify that you can run a container
 
+1. Run the same pod used with minikube: `kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080`
+2. Verify it's running `kubectl get pod`
+
+```none
+NAME                             READY     STATUS    RESTARTS   AGE
+hello-minikube-180744149-m4m1n   1/1       Running   0          2m
+```
+
+3. Expose a `NodePort` to it: `kubectl expose deployment hello-minikube --type=NodePort`
+
+4. Now get the IP & port to connect to it: `kubectl get ep hello-minikube`
+
+```none
+NAME             ENDPOINTS   AGE
+hello-minikube   <none>      50s
+```
 
 ### Joining the Windows node
 
