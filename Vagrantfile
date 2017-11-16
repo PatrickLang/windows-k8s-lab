@@ -26,6 +26,7 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/vagrant", type: "rsync",
     rsync__exclude: ".git/"
 
+  config.vm.provision "shell", path: "disable-swap.sh"
   config.vm.provision "shell", path: "install-docker.sh"
   config.vm.provision "shell", path: "install-k8s.sh"
   
