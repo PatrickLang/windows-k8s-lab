@@ -268,9 +268,6 @@ https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md
 Using [1.7.3](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md/#downloads-for-v173):
 - [Windows node](https://dl.k8s.io/v1.7.3/kubernetes-node-windows-amd64.tar.gz)
 
-
-
-
 ## References
 
 - [Minikube support for Windows added in April 2016](https://github.com/kubernetes/minikube/issues/28)
@@ -281,7 +278,9 @@ Using [1.7.3](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md/
 
 - [ ] Add Flannel CNI config
 - [ ] Get right Windows bits
- - [ ] flannel.exe, flannel.exe (cni plugin), host-local (cni plugin) - currently build from https://github.com/rakelkar/flannel/tree/rakelkar/windows-hostgw 
+ - [ ] flannel.exe (client binary) currently build from https://github.com/rakelkar/flannel/tree/rakelkar/windows-hostgw , goes in c:\k\flannel.exe
+ - [ ] flannel.exe (cni plugin), goes in c:\k\cni\flannel.exe, from https://github.com/rakelkar/plugins/tree/windowsCni/plugins/meta/flannel
+ - [ ] host-local (cni plugin) - goes in c:\k\cni, from https://github.com/containernetworking/plugins/tree/master/plugins/ipam/host-local 
  - [ ] kubelet - currently build from master. 1.9beta1 will hopefully have all fixes
  - [ ] kube-proxy - PR needed for `kernelspace` fix
 - [ ] Join Linux node before Windows
