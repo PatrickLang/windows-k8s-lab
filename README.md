@@ -240,6 +240,22 @@ NAME             ENDPOINTS   AGE
 hello-minikube   <none>      50s
 ```
 
+
+### Joining a Linux node
+
+The `Vagrantfile` also includes another Linux VM called "nodea".
+
+Be sure to grab the `kubeadm join` command given from `kubeadm init` when it's run on the master. 
+
+Do `vagrant ssh nodea`, then run it under `sudo`
+
+```bash
+sudo kubeadm join --token 7c3d1c.087d6526457b46e7 192.168.1.145:6443 --discovery-token-ca-cert-hash sha256:a186cc2700908fc1296c59eb974717561beec7a7302f787779129fad76e26c78
+```
+
+
+
+
 ### Joining the Windows node
 
 > Work in progress
@@ -261,7 +277,13 @@ Using [1.7.3](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md/
 - [Kubernetes the Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way)
 - [Getting Started Guide - Windows](https://kubernetes.io/docs/getting-started-guides/windows/)
 
-## Bonus points for later
+## Work in progress
 
-- [Update Vagrant Deployer for Kubernetes Ansible](https://github.com/kubernetes/contrib/tree/master/ansible/vagrant) to work on Hyper-V
-- [Update CentOS Atomic Host box for Hyper-V](https://wiki.centos.org/SpecialInterestGroup/Atomic/Download)
+- [ ] Join Linux node before Windows
+- [ ] Update captures above to reflect k8s 1.8
+  - include updated kubeadm init output, join with tls thumbprint
+
+
+**Bonus points for later**
+- [ ] [Update Vagrant Deployer for Kubernetes Ansible](https://github.com/kubernetes/contrib/tree/master/ansible/vagrant) to work on Hyper-V
+- [ ] [Update CentOS Atomic Host box for Hyper-V](https://wiki.centos.org/SpecialInterestGroup/Atomic/Download)
