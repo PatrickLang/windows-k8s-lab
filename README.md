@@ -277,8 +277,9 @@ Using [1.7.3](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md/
 - [Kubernetes the Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way)
 - [Getting Started Guide - Windows](https://kubernetes.io/docs/getting-started-guides/windows/)
 
-## Work in progress
+## Work in progress - remaining steps
 
+- [ ] Add Flannel CNI config
 - [ ] Join Linux node before Windows
 - [ ] Update captures above to reflect k8s 1.8
   - include updated kubeadm init output, join with tls thumbprint
