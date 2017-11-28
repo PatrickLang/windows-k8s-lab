@@ -280,6 +280,10 @@ Using [1.7.3](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md/
 ## Work in progress - remaining steps
 
 - [ ] Add Flannel CNI config
+- [ ] Get right Windows bits
+ - [ ] flannel.exe, flannel.exe (cni plugin), host-local (cni plugin) - currently build from https://github.com/rakelkar/flannel/tree/rakelkar/windows-hostgw 
+ - [ ] kubelet - currently build from master. 1.9beta1 will hopefully have all fixes
+ - [ ] kube-proxy - PR needed for `kernelspace` fix
 - [ ] Join Linux node before Windows
 - [ ] Update captures above to reflect k8s 1.8
   - include updated kubeadm init output, join with tls thumbprint
