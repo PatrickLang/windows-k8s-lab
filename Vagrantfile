@@ -19,7 +19,7 @@ Vagrant.configure("2") do |config|
     master.vm.provision "shell", path: "disable-swap.sh"
     master.vm.provision "shell", path: "install-docker.sh"
     master.vm.provision "shell", path: "install-k8s.sh"
-    master.vm.provision "shell", inline: "kubeadm init"
+    master.vm.provision "shell", inline: "kubeadm init --pod-network-cidr=10.244.0.0/16"
   end
 
 

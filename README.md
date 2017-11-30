@@ -182,6 +182,8 @@ There are two important areas you need to save for later:
 - The kube config
 - The kubeadm join line
 
+
+#### Getting the kube config
 First, get a copy of the kubeadm config into your home directory in the Centos VM. Connect with `vagrant ssh` for the next step
 
 ```bash
@@ -196,6 +198,17 @@ And confirm it works inside the Centos VM with `kubectl get node`
 [vagrant@localhost ~]$ kubectl get node
 NAME                    STATUS     AGE       VERSION
 localhost.localdomain   NotReady   32m       v1.7.3
+```
+
+### Setting up Flannel on master
+
+Connect to the master with `vagrant ssh master`
+
+Now, get the default flannel configuration and deploy it:
+
+```bash
+curl https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml -o kube-flannel.yml
+kubectl apply -f kube-flannel.yml
 ```
 
 
@@ -276,7 +289,7 @@ Using [1.7.3](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md/
 
 ## Work in progress - remaining steps
 
-- [ ] Add Flannel CNI config
+- [ ] Add Flannel CNI config after setting up master
 - [ ] Get right Windows bits
  - [ ] flannel.exe (client binary) currently build from https://github.com/rakelkar/flannel/tree/rakelkar/windows-hostgw , goes in c:\k\flannel.exe
  - [ ] flannel.exe (cni plugin), goes in c:\k\cni\flannel.exe, from https://github.com/rakelkar/plugins/tree/windowsCni/plugins/meta/flannel
