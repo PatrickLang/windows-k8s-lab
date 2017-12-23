@@ -1,85 +1,6 @@
 
 
 
-
-## Building a 1-node Linux-based cluster with Minikube on Windows 10
-
-Minikube sets up a quick 1-node Linux-only Kubernetes cluster in a VM. However, it can't add other nodes such as a Windows host. If you just want to run a few Linux containers to try Kubernetes out, this is a good way to start.
-
-The download links & full guide are at https://github.com/kubernetes/minikube , but here's a brief summary.
-
-
-### Starting up Minikube
-
-```powershell
-minikube start --vm-driver hyperv
-```
-
-```none
-Starting local Kubernetes v1.7.0 cluster...
-Starting VM...
-Getting VM IP address...
-Moving files into cluster...
-Setting up certs...
-Starting cluster components...
-Connecting to cluster...
-Setting up kubeconfig...
-Kubectl is now configured to use the cluster.
-```
-
-### Run first container
-
-```powershell
-kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080
-
->kubectl get pod
-NAME                             READY     STATUS    RESTARTS   AGE
-hello-minikube-180744149-m4m1n   1/1       Running   0          2m
-
-kubectl expose deployment hello-minikube --type=NodePort
-
->minikube service hello-minikube --url
-http://192.168.1.156:31007
-PS 08/05/2017 16:21:32 C:\minikube
->(Invoke-WebRequest -UseBasicParsing $(minikube service hello-minikube --url)).Content
-CLIENT VALUES:
-client_address=172.17.0.1
-command=GET
-real path=/
-query=nil
-request_version=1.1
-request_uri=http://192.168.1.156:8080/
-
-SERVER VALUES:
-server_version=nginx: 1.10.0 - lua: 10001
-
-HEADERS RECEIVED:
-host=192.168.1.156:31007
-user-agent=Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.15063.483
-BODY:
--no body in request-
-PS 08/05/2017 16:22:01 C:\minikube
-
-```
-
-
-
-### Getting access to services running under Minikube
-
-```
->minikube service list
-|-------------|----------------------|----------------------------|
-|  NAMESPACE  |         NAME         |            URL             |
-|-------------|----------------------|----------------------------|
-| default     | hello-minikube       | http://192.168.1.156:31007 |
-| default     | kubernetes           | No node port               |
-| kube-system | kube-dns             | No node port               |
-| kube-system | kubernetes-dashboard | http://192.168.1.156:30000 |
-|-------------|----------------------|----------------------------|
-```
-
-
-
 ## Building a 2 node Windows/Linux cluster
 
 Once you have some of the basics down with Kubernetes, it's time to build a larger cluster with both Windows & Linux nodes.
@@ -226,34 +147,6 @@ vagrant ssh -c 'cat ~/.kube/config' default | out-file ~/.kube/config -encoding 
 
 Now, `kubectl get node` should succeed.
 
-### Enable containers to run on master
-
-By default, master nodes are `taint`ed so that other containers won't run on them. Running arbitrary code on a master node is a bad idea because in the case of a container break-out exploit, the attacker would have access to the Kubernetes master and therefore owns the whole cluster.
-
-Caveats aside - you can remove this taint and run containers on the master. This makes things a bit easier when you're just running a test VM that's not exposed on the internet.
-
-`kubectl taint nodes --all node-role.kubernetes.io/master-`
-
-Now, verify that you can run a container
-
-1. Run the same pod used with minikube: `kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080`
-2. Verify it's running `kubectl get pod`
-
-```none
-NAME                             READY     STATUS    RESTARTS   AGE
-hello-minikube-180744149-m4m1n   1/1       Running   0          2m
-```
-
-3. Expose a `NodePort` to it: `kubectl expose deployment hello-minikube --type=NodePort`
-
-4. Now get the IP & port to connect to it: `kubectl get ep hello-minikube`
-
-```none
-NAME             ENDPOINTS   AGE
-hello-minikube   <none>      50s
-```
-
-
 ### Joining a Linux node
 
 The `Vagrantfile` also includes another Linux VM called "nodea".
@@ -266,8 +159,65 @@ Do `vagrant ssh nodea`, then run it under `sudo`
 sudo kubeadm join --token 7c3d1c.087d6526457b46e7 192.168.1.145:6443 --discovery-token-ca-cert-hash sha256:a186cc2700908fc1296c59eb974717561beec7a7302f787779129fad76e26c78
 ```
 
+### Run a Linux service to test it out
 
+Now, go back to the master. Disconnect from `nodea` if you're SSH'd to it, then run `vagrant ssh master`
 
+These next steps will show:
+
+1. Creating a deployment `hello` that will run a container called `echoserver`
+2. Creating a service that's accessible on a cluster IP (but not outside the cluster)
+3. Connecting and making sure it works
+
+```bash
+kubectl run hello --image=gcr.io/google_containers/echoserver:1.4 --port=8080
+kubectl get pod -o wide
+```
+
+Now you should have a pod running:
+  NAME                     READY     STATUS    RESTARTS   AGE       IP           NODE
+  hello-794f7449f5-rmdjt   1/1       Running   0          25m       10.244.1.4   nodea.localdomain
+
+```bash
+kubectl expose deploy hello --type=ClusterIP
+kubectl get service
+```
+
+Now it has a service listening on a cluster IP, port 8080:
+  NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+  hello        ClusterIP   10.107.64.106   <none>        8080/TCP   10m
+  kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP    41m
+
+```bash
+curl http://10.107.64.106:8080/
+```
+
+Which will return something like this:
+  CLIENT VALUES:
+  client_address=10.244.0.0
+  command=GET
+  real path=/
+  query=nil
+  request_version=1.1
+  request_uri=http://10.107.64.106:8080/
+
+  SERVER VALUES:
+  server_version=nginx: 1.10.0 - lua: 10001
+
+  HEADERS RECEIVED:
+  accept=*/*
+  host=10.107.64.106:8080
+  user-agent=curl/7.29.0
+  BODY:
+  -no body in request-
+
+Now the service is up and running on nodea! Once you're done, delete the service and deployment to clean
+everything back up.
+
+```bash
+kubectl delete deploy hello
+kubectl delete service hello
+```
 
 ### Joining the Windows node
 
@@ -289,18 +239,98 @@ Using [1.7.3](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md/
 
 ## Work in progress - remaining steps
 
-- [ ] Add Flannel CNI config after setting up master
+- [x] Add Flannel CNI config after setting up master
+- [x] Join Linux node before Windows
+- [ ] Update captures above to reflect k8s 1.9
+  - include updated kubeadm init output, join with tls thumbprint
 - [ ] Get right Windows bits
  - [ ] flannel.exe (client binary) currently build from https://github.com/rakelkar/flannel/tree/rakelkar/windows-hostgw , goes in c:\k\flannel.exe
  - [ ] flannel.exe (cni plugin), goes in c:\k\cni\flannel.exe, from https://github.com/rakelkar/plugins/tree/windowsCni/plugins/meta/flannel
  - [ ] host-local (cni plugin) - goes in c:\k\cni, from https://github.com/containernetworking/plugins/tree/master/plugins/ipam/host-local 
  - [ ] kubelet - currently build from master. 1.9beta1 will hopefully have all fixes
  - [ ] kube-proxy - PR needed for `kernelspace` fix
-- [ ] Join Linux node before Windows
-- [ ] Update captures above to reflect k8s 1.8
-  - include updated kubeadm init output, join with tls thumbprint
 
 
 **Bonus points for later**
 - [ ] [Update Vagrant Deployer for Kubernetes Ansible](https://github.com/kubernetes/contrib/tree/master/ansible/vagrant) to work on Hyper-V
 - [ ] [Update CentOS Atomic Host box for Hyper-V](https://wiki.centos.org/SpecialInterestGroup/Atomic/Download)
+
+
+
+
+
+## Building a 1-node Linux-based cluster with Minikube on Windows 10
+
+Minikube sets up a quick 1-node Linux-only Kubernetes cluster in a VM. However, it can't add other nodes such as a Windows host. If you just want to run a few Linux containers to try Kubernetes out, this is a good way to start.
+
+The download links & full guide are at https://github.com/kubernetes/minikube , but here's a brief summary.
+
+
+### Starting up Minikube
+
+```powershell
+minikube start --vm-driver hyperv
+```
+
+```none
+Starting local Kubernetes v1.7.0 cluster...
+Starting VM...
+Getting VM IP address...
+Moving files into cluster...
+Setting up certs...
+Starting cluster components...
+Connecting to cluster...
+Setting up kubeconfig...
+Kubectl is now configured to use the cluster.
+```
+
+### Run first container
+
+```powershell
+kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080
+
+>kubectl get pod
+NAME                             READY     STATUS    RESTARTS   AGE
+hello-minikube-180744149-m4m1n   1/1       Running   0          2m
+
+kubectl expose deployment hello-minikube --type=NodePort
+
+>minikube service hello-minikube --url
+http://192.168.1.156:31007
+PS 08/05/2017 16:21:32 C:\minikube
+>(Invoke-WebRequest -UseBasicParsing $(minikube service hello-minikube --url)).Content
+CLIENT VALUES:
+client_address=172.17.0.1
+command=GET
+real path=/
+query=nil
+request_version=1.1
+request_uri=http://192.168.1.156:8080/
+
+SERVER VALUES:
+server_version=nginx: 1.10.0 - lua: 10001
+
+HEADERS RECEIVED:
+host=192.168.1.156:31007
+user-agent=Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.15063.483
+BODY:
+-no body in request-
+PS 08/05/2017 16:22:01 C:\minikube
+
+```
+
+
+
+### Getting access to services running under Minikube
+
+```
+>minikube service list
+|-------------|----------------------|----------------------------|
+|  NAMESPACE  |         NAME         |            URL             |
+|-------------|----------------------|----------------------------|
+| default     | hello-minikube       | http://192.168.1.156:31007 |
+| default     | kubernetes           | No node port               |
+| kube-system | kube-dns             | No node port               |
+| kube-system | kubernetes-dashboard | http://192.168.1.156:30000 |
+|-------------|----------------------|----------------------------|
+```
