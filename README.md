@@ -175,8 +175,9 @@ kubectl get pod -o wide
 ```
 
 Now you should have a pod running:
-  NAME                     READY     STATUS    RESTARTS   AGE       IP           NODE
-  hello-794f7449f5-rmdjt   1/1       Running   0          25m       10.244.1.4   nodea.localdomain
+
+    NAME                     READY     STATUS    RESTARTS   AGE       IP           NODE
+    hello-794f7449f5-rmdjt   1/1       Running   0          25m       10.244.1.4   nodea.localdomain
 
 ```bash
 kubectl expose deploy hello --type=ClusterIP
@@ -184,32 +185,34 @@ kubectl get service
 ```
 
 Now it has a service listening on a cluster IP, port 8080:
-  NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-  hello        ClusterIP   10.107.64.106   <none>        8080/TCP   10m
-  kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP    41m
+
+    NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+    hello        ClusterIP   10.107.64.106   <none>        8080/TCP   10m
+    kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP    41m
 
 ```bash
 curl http://10.107.64.106:8080/
 ```
 
 Which will return something like this:
-  CLIENT VALUES:
-  client_address=10.244.0.0
-  command=GET
-  real path=/
-  query=nil
-  request_version=1.1
-  request_uri=http://10.107.64.106:8080/
 
-  SERVER VALUES:
-  server_version=nginx: 1.10.0 - lua: 10001
+    CLIENT VALUES:
+    client_address=10.244.0.0
+    command=GET
+    real path=/
+    query=nil
+    request_version=1.1
+    request_uri=http://10.107.64.106:8080/
 
-  HEADERS RECEIVED:
-  accept=*/*
-  host=10.107.64.106:8080
-  user-agent=curl/7.29.0
-  BODY:
-  -no body in request-
+    SERVER VALUES:
+    server_version=nginx: 1.10.0 - lua: 10001
+
+    HEADERS RECEIVED:
+    accept=*/*
+    host=10.107.64.106:8080
+    user-agent=curl/7.29.0
+    BODY:
+    -no body in request-
 
 Now the service is up and running on nodea! Once you're done, delete the service and deployment to clean
 everything back up.
