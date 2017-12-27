@@ -139,10 +139,13 @@ Now, it's time to get the config file needed out of the VM and onto your Windows
 
 ```powershell
 mkdir ~/.kube
-vagrant ssh -c 'cat ~/.kube/config' default | out-file ~/.kube/config -encoding ascii
+vagrant ssh  -c 'cat ~/.kube/config' master | out-file ~/.kube/config -encoding ascii
 ```
 
-> TODO download kubectl & put in path
+If you don't already have kubectl.exe on your machine and in your path, there's a few different 
+ways you can do it. The `kubernetes-cli` [choco package](https://chocolatey.org/packages/kubernetes-cli) 
+is probably the easiest - `choco install kubernetes-cli`. If you want to do this manually - look for the `kubernetes-client-windows-amd64.tgz` download in the [Kubernetes 1.9 release notes](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.9.md#downloads-for-v190)
+
 
 
 Now, `kubectl get node` should succeed.
@@ -236,22 +239,24 @@ Using [1.7.3](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md/
 
 ## References
 
-- [Minikube support for Windows added in April 2016](https://github.com/kubernetes/minikube/issues/28)
-- [Kubernetes the Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way)
 - [Getting Started Guide - Windows](https://kubernetes.io/docs/getting-started-guides/windows/)
+- [Kubernetes the Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way)
+
 
 ## Work in progress - remaining steps
 
 - [x] Add Flannel CNI config after setting up master
 - [x] Join Linux node before Windows
+- [ ] Auto join Linux node - finish testing
 - [ ] Update captures above to reflect k8s 1.9
   - include updated kubeadm init output, join with tls thumbprint
 - [ ] Get right Windows bits
- - [ ] flannel.exe (client binary) currently build from https://github.com/rakelkar/flannel/tree/rakelkar/windows-hostgw , goes in c:\k\flannel.exe
- - [ ] flannel.exe (cni plugin), goes in c:\k\cni\flannel.exe, from https://github.com/rakelkar/plugins/tree/windowsCni/plugins/meta/flannel
- - [ ] host-local (cni plugin) - goes in c:\k\cni, from https://github.com/containernetworking/plugins/tree/master/plugins/ipam/host-local 
- - [ ] kubelet - currently build from master. 1.9beta1 will hopefully have all fixes
- - [ ] kube-proxy - PR needed for `kernelspace` fix
+  - [x] kubectl
+  - [ ] flannel.exe (client binary) currently build from https://github.com/rakelkar/flannel/tree/rakelkar/windows-hostgw , goes in c:\k\flannel.exe
+  - [ ] flannel.exe (cni plugin), goes in c:\k\cni\flannel.exe, from https://github.com/rakelkar/plugins/tree/windowsCni/plugins/meta/flannel
+  - [ ] host-local (cni plugin) - goes in c:\k\cni, from https://github.com/containernetworking/plugins/tree/master/plugins/ipam/host-local 
+  - [ ] kubelet - currently build from master. 1.9beta1 will hopefully have all fixes
+  - [ ] kube-proxy - PR needed for `kernelspace` fix
 
 
 **Bonus points for later**
