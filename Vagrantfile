@@ -13,9 +13,7 @@ Vagrant.configure("2") do |config|
       hv.differencing_disk = true
     end
     master.vm.synced_folder ".", "/vagrant", type: "rsync",
-      rsync__exclude: ".git/",
-      rsync__auto: "true"
-      #rsync__args: ["--poll"]
+      rsync__exclude: ".git/"
 
     master.vm.hostname = "master.localdomain"
     master.vm.provision "shell", path: "disable-swap.sh"
@@ -35,9 +33,7 @@ Vagrant.configure("2") do |config|
       hv.differencing_disk = true
     end
     nodea.vm.synced_folder ".", "/vagrant", type: "rsync",
-      rsync__exclude: ".git/",
-      rsync__auto: "true"
-      #rsync__args: ["--poll"]
+      rsync__exclude: ".git/"
 
     nodea.vm.hostname = "nodea.localdomain"
 

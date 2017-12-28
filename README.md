@@ -39,11 +39,11 @@ This also has Vagrant provisioner steps to:
 > TODO: this gets docker-1.12.6-32.git88a4867.el7.centos.x86_64 - good/bad?
 
 
-### Starting the Kubernetes master
+### Step 1 - Start the Kubernetes master
+
+`vagrant up master`
 
 The last provisioner step in the `Vagrantfile` runs `install-k8s.sh` which will install all the packages and create a Kubernetes master. These steps were adapted from the [official guide](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/)
-
-After you've run `vagrant up` or `vagrant provision` - the last step will look something like this:
 
 
 ```none
@@ -121,6 +121,16 @@ NAME                    STATUS     AGE       VERSION
 localhost.localdomain   NotReady   32m       v1.7.3
 ```
 
+#### Getting the kubeadm join script
+
+Normally, the Vagrant synced folders would make this easy but there's a few limitations with Vagrant on Windows. Instead, a manual step is needed to copy the node join info back to the host before starting the next VMs.
+
+```powershell
+if ((test-path tmp) -eq $false) { mkdir tmp }
+vagrant ssh -c 'cat /vagrant/tmp/join.sh' master | out-file -encoding ascii "tmp/join.sh"
+```
+
+
 ### Setting up Flannel on master
 
 Connect to the master with `vagrant ssh master`
@@ -130,6 +140,21 @@ Now, get the default flannel configuration and deploy it:
 ```bash
 curl https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml -o kube-flannel.yml
 kubectl apply -f kube-flannel.yml
+```
+
+Check that it started up with `kubectl get pod --all-namespaces`. Within a minute or two, at least one instance of `kube-flannel-ds` and `kube-dns` should be running. Wait for those before moving on - `kubectl get pod --all-namespaces -w` makes it easy.
+
+```none
+NAMESPACE     NAME                                         READY     STATUS    RESTARTS   AGE
+kube-system   etcd-master.localdomain                      1/1       Running   0          9m
+kube-system   kube-apiserver-master.localdomain            1/1       Running   0          9m
+kube-system   kube-controller-manager-master.localdomain   1/1       Running   0          9m
+kube-system   kube-dns-6f4fd4bdf-m6wv4                     3/3       Running   0          10m
+kube-system   kube-flannel-ds-ph6c2                        1/1       Running   0          1m
+kube-system   kube-flannel-ds-whf4g                        1/1       Running   0          1m
+kube-system   kube-proxy-gt2ht                             1/1       Running   0          10m
+kube-system   kube-proxy-jrvqf                             1/1       Running   0          3m
+kube-system   kube-scheduler-master.localdomain            1/1       Running   0          9m
 ```
 
 
@@ -146,21 +171,19 @@ If you don't already have kubectl.exe on your machine and in your path, there's 
 ways you can do it. The `kubernetes-cli` [choco package](https://chocolatey.org/packages/kubernetes-cli) 
 is probably the easiest - `choco install kubernetes-cli`. If you want to do this manually - look for the `kubernetes-client-windows-amd64.tgz` download in the [Kubernetes 1.9 release notes](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.9.md#downloads-for-v190)
 
-
-
-Now, `kubectl get node` should succeed.
+Now, `kubectl get node` should work on the Windows host.
 
 ### Joining a Linux node
 
-The `Vagrantfile` also includes another Linux VM called "nodea".
+The `Vagrantfile` also includes another Linux VM called "nodea". After setting up the master, be sure you
+ran the extra step to copy `join.sh` back to the host before going forward.
 
-Be sure to grab the `kubeadm join` command given from `kubeadm init` when it's run on the master. 
+`vagrant up nodea` will bring up the Linux node. You can check with `kubectl get node`
 
-Do `vagrant ssh nodea`, then run it under `sudo`
-
-```bash
-sudo kubeadm join --token 7c3d1c.087d6526457b46e7 192.168.1.145:6443 --discovery-token-ca-cert-hash sha256:a186cc2700908fc1296c59eb974717561beec7a7302f787779129fad76e26c78
-```
+    PS C:\Users\patrick\Source\windows-k8s-lab> kubectl get node
+    NAME                 STATUS    ROLES     AGE       VERSION
+    master.localdomain   Ready     master    12m       v1.9.0
+    nodea.localdomain    Ready     <none>    4m        v1.9.0 
 
 ### Run a Linux service to test it out
 
@@ -181,6 +204,8 @@ Now you should have a pod running:
 
     NAME                     READY     STATUS    RESTARTS   AGE       IP           NODE
     hello-794f7449f5-rmdjt   1/1       Running   0          25m       10.244.1.4   nodea.localdomain
+
+If not, wait and check again. It may take from a few seconds to a few minutes depending on how fast your host and internet connection are.
 
 ```bash
 kubectl expose deploy hello --type=ClusterIP
