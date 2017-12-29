@@ -187,15 +187,15 @@ ran the extra step to copy `join.sh` back to the host before going forward.
 
 ### Run a Linux service to test it out
 
-Now, go back to the master. Disconnect from `nodea` if you're SSH'd to it, then run `vagrant ssh master`
+If you are still SSH'd to a Linux node, go ahead and type `exit` to disconnect. Next we'll bring it all together and use kubectl on Windows to deploy a service to the Linux nodes, then connect to it.
 
 These next steps will show:
 
 1. Creating a deployment `hello` that will run a container called `echoserver`
-2. Creating a service that's accessible on a cluster IP (but not outside the cluster)
+2. Creating a service that's accessible on the node's IP 
 3. Connecting and making sure it works
 
-```bash
+```powershell
 kubectl run hello --image=gcr.io/google_containers/echoserver:1.4 --port=8080
 kubectl get pod -o wide
 ```
@@ -207,22 +207,58 @@ Now you should have a pod running:
 
 If not, wait and check again. It may take from a few seconds to a few minutes depending on how fast your host and internet connection are.
 
-```bash
-kubectl expose deploy hello --type=ClusterIP
+```powershell
+kubectl expose deploy hello --type=NodePort
 kubectl get service
 ```
 
-Now it has a service listening on a cluster IP, port 8080:
+Now it has a service listening on each node's external IP, but the port (31345 in this example) will vary
 
-    NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-    hello        ClusterIP   10.107.64.106   <none>        8080/TCP   10m
-    kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP    41m
+    NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+    hello        NodePort    10.111.75.166   <none>        8080:31345/TCP   20h
+    kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP          1d
+
+You can easily get each Linux node's IP from Hyper-V Manager, with `Get-VMNetwork`, or `vagrant ssh-config`. Get the IP of each node, and try to access the service running on the nodeport:
 
 ```bash
-curl http://10.107.64.106:8080/
+(Invoke-WebRequest -UseBasicParsing http://192.168.1.139:31345).RawContent
 ```
 
 Which will return something like this:
+
+    HTTP/1.1 200 OK
+    Transfer-Encoding: chunked
+    Connection: keep-alive
+    Content-Type: text/plain
+    Date: Thu, 28 Dec 2017 10:42:59 GMT
+    Server: nginx/1.10.0
+
+    CLIENT VALUES:
+    client_address=10.244.1.1
+    command=GET
+    real path=/
+    query=nil
+    request_version=1.1
+    request_uri=http://192.168.1.139:8080/
+
+    SERVER VALUES:
+    server_version=nginx: 1.10.0 - lua: 10001
+
+    HEADERS RECEIVED:
+    host=192.168.1.139:31345
+    user-agent=Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.16299.98
+    BODY:
+    -no body in request-
+
+
+Try another cluster node's external IP if you want to make sure the Kubernetes cluster network is working ok. The client_address will change showing you accessed it from a different cluster node.
+
+    HTTP/1.1 200 OK
+    Transfer-Encoding: chunked
+    Connection: keep-alive
+    Content-Type: text/plain
+    Date: Thu, 28 Dec 2017 10:44:56 GMT
+    Server: nginx/1.10.0
 
     CLIENT VALUES:
     client_address=10.244.0.0
@@ -230,17 +266,18 @@ Which will return something like this:
     real path=/
     query=nil
     request_version=1.1
-    request_uri=http://10.107.64.106:8080/
+    request_uri=http://192.168.1.138:8080/
 
     SERVER VALUES:
     server_version=nginx: 1.10.0 - lua: 10001
 
     HEADERS RECEIVED:
-    accept=*/*
-    host=10.107.64.106:8080
-    user-agent=curl/7.29.0
+    connection=Keep-Alive
+    host=192.168.1.138:31345
+    user-agent=Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.16299.98
     BODY:
     -no body in request-
+
 
 Now the service is up and running on nodea! Once you're done, delete the service and deployment to clean
 everything back up.
