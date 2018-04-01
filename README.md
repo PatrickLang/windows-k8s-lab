@@ -169,7 +169,9 @@ vagrant ssh  -c 'cat ~/.kube/config' master | out-file ~/.kube/config -encoding 
 
 If you don't already have kubectl.exe on your machine and in your path, there's a few different 
 ways you can do it. The `kubernetes-cli` [choco package](https://chocolatey.org/packages/kubernetes-cli) 
-is probably the easiest - `choco install kubernetes-cli`. If you want to do this manually - look for the `kubernetes-client-windows-amd64.tgz` download in the [Kubernetes 1.9 release notes](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.9.md#downloads-for-v190)
+is probably the easiest - `choco install kubernetes-cli`. If you want to do this manually - look for the `kubernetes-client-windows-amd64.tgz` download in the [Kubernetes 1.10 release notes](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.10.md#client-binaries)
+
+> Tip: Later you can use `choco upgrade kubernetes-cli` to get a new release
 
 Now, `kubectl get node` should work on the Windows host.
 
@@ -182,8 +184,8 @@ ran the extra step to copy `join.sh` back to the host before going forward.
 
     PS C:\Users\patrick\Source\windows-k8s-lab> kubectl get node
     NAME                 STATUS    ROLES     AGE       VERSION
-    master.localdomain   Ready     master    12m       v1.9.0
-    nodea.localdomain    Ready     <none>    4m        v1.9.0 
+    master.localdomain   Ready     master    8m        v1.10.0
+    nodea.localdomain    Ready     <none>    36s       v1.10.0
 
 ### Run a Linux service to test it out
 
@@ -196,7 +198,7 @@ These next steps will show:
 3. Connecting and making sure it works
 
 ```powershell
-kubectl run hello --image=gcr.io/google_containers/echoserver:1.4 --port=8080
+kubectl run hello --image=gcr.io/google_containers/echoserver:1.10 --port=8080
 kubectl get pod -o wide
 ```
 
@@ -310,7 +312,7 @@ Using [1.7.3](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md/
 - [x] Add Flannel CNI config after setting up master
 - [x] Join Linux node before Windows
 - [ ] Auto join Linux node - finish testing
-- [ ] Update captures above to reflect k8s 1.9
+- [x] Update captures above to reflect k8s 1.10
   - include updated kubeadm init output, join with tls thumbprint
 - [ ] Get right Windows bits
   - [x] kubectl
