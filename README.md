@@ -222,7 +222,7 @@ Now it has a service listening on each node's external IP, but the port (31345 i
 
 You can easily get each Linux node's IP from Hyper-V Manager, with `Get-VMNetwork`, or `vagrant ssh-config`. Get the IP of each node, and try to access the service running on the nodeport:
 
-```bash
+```powershell
 (Invoke-WebRequest -UseBasicParsing http://192.168.1.139:31345).RawContent
 ```
 
@@ -298,8 +298,8 @@ Steps to be adapted from https://kubernetes.io/docs/getting-started-guides/windo
 Find latest binaries at:
 https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md
 
-Using [1.7.3](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md/#downloads-for-v173):
-- [Windows node](https://dl.k8s.io/v1.7.3/kubernetes-node-windows-amd64.tar.gz)
+Using [1.10.0](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.10.md#node-binaries):
+- [Windows node](https://dl.k8s.io/v1.10.0/kubernetes-node-windows-amd64.tar.gz)
 
 ## References
 
@@ -319,8 +319,8 @@ Using [1.7.3](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md/
   - [ ] flannel.exe (client binary) currently build from https://github.com/rakelkar/flannel/tree/rakelkar/windows-hostgw , goes in c:\k\flannel.exe
   - [ ] flannel.exe (cni plugin), goes in c:\k\cni\flannel.exe, from https://github.com/rakelkar/plugins/tree/windowsCni/plugins/meta/flannel
   - [ ] host-local (cni plugin) - goes in c:\k\cni, from https://github.com/containernetworking/plugins/tree/master/plugins/ipam/host-local 
-  - [ ] kubelet - currently build from master. 1.9beta1 will hopefully have all fixes
-  - [ ] kube-proxy - PR needed for `kernelspace` fix
+  - [x] kubelet - currently build from master. 1.9beta1 will hopefully have all fixes - included in v1.10
+  - [x] kube-proxy - PR needed for `kernelspace` fix - included in v1.10
 
 
 **Bonus points for later**
