@@ -105,7 +105,7 @@ There are two important areas you need to save for later:
 
 
 #### Getting the kube config
-First, get a copy of the kubeadm config into your home directory in the Centos VM. Connect with `vagrant ssh` for the next step
+First, get a copy of the kubeadm config into your home directory in the Centos VM. Connect with `vagrant ssh master` for the next step
 
 ```bash
 mkdir -p $HOME/.kube
