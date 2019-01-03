@@ -98,7 +98,7 @@ spec:
     spec:
       hostNetwork: true
       nodeSelector:
-      - beta.kubernetes.io/arch: amd64
+        beta.kubernetes.io/arch: amd64
         beta.kubernetes.io/os: linux
       tolerations:
       - operator: Exists
@@ -177,7 +177,7 @@ spec:
     spec:
       hostNetwork: true
       nodeSelector:
-      - beta.kubernetes.io/arch: arm64
+        beta.kubernetes.io/arch: arm64
         beta.kubernetes.io/os: linux
       tolerations:
       - operator: Exists
@@ -256,7 +256,7 @@ spec:
     spec:
       hostNetwork: true
       nodeSelector:
-      - beta.kubernetes.io/arch: arm
+        beta.kubernetes.io/arch: arm
         beta.kubernetes.io/os: linux
       tolerations:
       - operator: Exists
@@ -335,7 +335,7 @@ spec:
     spec:
       hostNetwork: true
       nodeSelector:
-      - beta.kubernetes.io/arch: ppc64le
+        beta.kubernetes.io/arch: ppc64le
         beta.kubernetes.io/os: linux
       tolerations:
       - operator: Exists
@@ -414,7 +414,7 @@ spec:
     spec:
       hostNetwork: true
       nodeSelector:
-      - beta.kubernetes.io/arch: s390x
+        beta.kubernetes.io/arch: s390x
         beta.kubernetes.io/os: linux
       tolerations:
       - operator: Exists
