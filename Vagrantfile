@@ -10,7 +10,7 @@ Vagrant.configure("2") do |config|
       hv.memory = 1024
       hv.maxmemory = 2048
       hv.cpus = 2
-      hv.differencing_disk = true
+      hv.linked_clone = true
     end
     master.vm.synced_folder ".", "/vagrant", type: "rsync",
       rsync__exclude: ".git/"
@@ -30,7 +30,7 @@ Vagrant.configure("2") do |config|
       hv.memory = 1024
       hv.maxmemory = 2048
       hv.cpus = 2
-      hv.differencing_disk = true
+      hv.linked_clone = true
     end
     nodea.vm.synced_folder ".", "/vagrant", type: "rsync",
       rsync__exclude: ".git/"
