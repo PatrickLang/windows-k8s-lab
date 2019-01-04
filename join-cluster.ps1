@@ -1,0 +1,1 @@
+# c:\k\kubeadm.exe join --token 6mt2m9.v9pkll9a4rqwhuvy  10.0.0.1:6443 --discovery-token-ca-cert-hash sha256:4ec319bbf5c1b5020f77c2b73f64a9bc654c27e622f8abb13976f03a37cc2af2
