@@ -289,9 +289,43 @@ kubectl delete deploy hello
 kubectl delete service hello
 ```
 
+
+### Building the Windows VM
+
+Microsoft licensing doesn't allow users to share VMs publically. This means you'll have to build your own base VM, but Packer makes it easy. Normally there is a trial ISO available, but it's still not ready for Windows Server 2019 according to the [Windows Server Blog](https://cloudblogs.microsoft.com/windowsserver/2018/11/13/update-on-windows-server-2019-availability/). Until then, you'll need a paid MSDN account where you can download the ISO and get a product key to use as a developer.
+
+Clone [patricklang/packer-windows](https://github.com/StefanScherer/packer-windows), checkout the `ws2019-core-hyperv` branch, then modify a few things:
+
+1. In `answer_files\2019_core\Autounattend.xml` uncomment `<Key>...</Key>`, and set a real product key there. This is needed until the Windows Server 2019 trial ISO is released.
+
+```xml
+                <ProductKey>
+                    <!--
+                        Windows Server Insider product key
+                        See https://blogs.windows.com/windowsexperience/2017/07/13/announcing-windows-server-insider-preview-build-16237/
+                    -->
+                    <!--<Key></Key>-->
+                    <WillShowUI>OnError</WillShowUI>
+                </ProductKey>
+```
+2. Modify `build_windows_2019_docker.sh` if you're using VMWare Fusion on Mac. Set `--var iso_url=/path/to/en_windows_server_2019_x64_dvd_4cb967d8.iso` and `--var iso_checksum=4C5DD63EFEE50117986A2E38D4B3A3FBAF3C1C15E2E7EA1D23EF9D8AF148DD2D`. If you're using Hyper-V, use `build_windows_2019_docker.ps1` as-is.
+
+3. Now, you can build the VM by running one of those two scripts.
+
+The last lines will look like this with Hyper-V:
+
+```none
+Build 'hyperv-iso' finished.
+
+==> Builds finished. The artifacts of successful builds are:
+--> hyperv-iso: VM files in directory: output-hyperv-iso
+```
+
+Run `vagrant box add --name WindowsServer2019Docker windows_2019_docker_hyperv.box`
+
 ### Joining the Windows node
 
-> Work in progress
+> TODO: Work in progress, will eventually involve `vagrant up win1`
 
 Steps to be adapted from https://kubernetes.io/docs/getting-started-guides/windows/ or https://github.com/apprenda/kubernetes-ovn-heterogeneous-cluster
 

@@ -43,4 +43,21 @@ Vagrant.configure("2") do |config|
     nodea.vm.provision "shell", inline: "sh /vagrant/tmp/join.sh"
   end
 
+
+  config.vm.define "win1" do |win1|
+    win1.vm.box = "WindowsServer2019Docker"
+    win1.vm.provider "hyperv" do |hv|
+      hv.vmname = "K8s-win1"
+      hv.memory = 4096
+      hv.maxmemory = 8192
+      hv.cpus = 2
+      hv.linked_clone = true
+    end
+
+    win1.vm.hostname = "win1"
+    # win1.vm.provision "shell", path: "install-k8s.ps1"
+    # win1.vm.provision "shell", path: "install-flannel.ps1"
+    # win1.vm.provision "shell", path: "join-cluster.ps1"
+  end
+
 end
