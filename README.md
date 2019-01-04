@@ -327,13 +327,68 @@ Run `vagrant box add --name WindowsServer2019Docker windows_2019_docker_hyperv.b
 
 > TODO: Work in progress, will eventually involve `vagrant up win1`
 
-Steps to be adapted from https://kubernetes.io/docs/getting-started-guides/windows/ or https://github.com/apprenda/kubernetes-ovn-heterogeneous-cluster
+Current blockers:
 
-Find latest binaries at:
-https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md
+- [ ] kubelet not starting as a service
+- [ ] kubeadm adds some configs Windows doesn't support
 
-Using [1.10.0](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.10.md#node-binaries):
-- [Windows node](https://dl.k8s.io/v1.10.0/kubernetes-node-windows-amd64.tar.gz)
+Nice-to-have:
+
+- [ ] Move kubeadm created files in c:\etc and c:\var to a better location and lock it down
+
+
+Errors from kubelet
+
+```
+PS C:\k> .\kubelet.exe --kubeconfig C:\var\lib\kubelet\config.yaml --pod-infra-container-image=kubeletwin/pause
+F0104 15:04:54.218313    4644 server.go:206] [invalid configuration: CgroupsPerQOS (--cgroups-per-qos) true is not supported on Windows, invalid configuration: EnforceNodeAllocatable (--enforce-node-allocatable) [pods] is not supported on Windows]
+```
+
+Errors from kubeadm
+
+```none
+./kubeadm join --token 6mt2m9.v9pkll9a4rqwhuvy  10.0.0.1:6443 --discovery-token-ca-cert-hash sha256:4ec319bbf5c1b5020f77c2b73f64a9bc654c27e622f8abb13976f03a37cc2af2
+[preflight] Running pre-flight checks
+        [WARNING SystemVerification]: this Docker version is not on the list of validated versions: 18.09.0. Latest validated version: 18.06
+        [WARNING Service-Kubelet]: kubelet service is not enabled, please run 'systemctl enable kubelet.service'
+[discovery] Trying to connect to API Server "10.31.104.159:6443"
+[discovery] Created cluster-info discovery client, requesting info from "https://10.31.104.159:6443"
+[discovery] Requesting info from "https://10.31.104.159:6443" again to validate TLS against the pinned public key
+[discovery] Cluster info signature and contents are valid and TLS certificate validates against pinned roots, will use API Server "10.31.104.159:6443"
+[discovery] Successfully established connection with API Server "10.31.104.159:6443"
+[join] Reading configuration from the cluster...
+[join] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -oyaml'
+[kubelet] Downloading configuration for the kubelet from the "kubelet-config-1.13" ConfigMap in the kube-system namespace
+[kubelet-start] Writing kubelet configuration to file "\\var\\lib\\kubelet\\config.yaml"
+W0104 15:10:13.620344    2876 flags.go:82] cannot automatically assign a '--cgroup-driver' value when starting the Kubelet: cgroup driver is not defined in 'docker info'
+[kubelet-start] Writing kubelet environment file with flags to file "\\var\\lib\\kubelet\\kubeadm-flags.env"
+[kubelet-start] Activating the kubelet service
+[kubelet-start] WARNING: unable to start the kubelet service: [couldn't start service: exit status 1]
+[kubelet-start] please ensure kubelet is reloaded and running manually.
+[tlsbootstrap] Waiting for the kubelet to perform the TLS Bootstrap...
+[kubelet-check] Initial timeout of 40s passed.
+[kubelet-check] It seems like the kubelet isn't running or healthy.
+[kubelet-check] The HTTP call equal to 'curl -sSL http://localhost:10248/healthz' failed with error: Get http://localhost:10248/healthz: dial tcp [::1]:10248: connectex: No connection could be made because the target machine actively refused it..
+[kubelet-check] It seems like the kubelet isn't running or healthy.
+[kubelet-check] The HTTP call equal to 'curl -sSL http://localhost:10248/healthz' failed with error: Get http://localhost:10248/healthz: dial tcp [::1]:10248: connectex: No connection could be made because the target machine actively refused it..
+[kubelet-check] It seems like the kubelet isn't running or healthy.
+[kubelet-check] The HTTP call equal to 'curl -sSL http://localhost:10248/healthz' failed with error: Get http://localhost:10248/healthz: dial tcp [::1]:10248: connectex: No connection could be made because the target machine actively refused it..
+[kubelet-check] It seems like the kubelet isn't running or healthy.
+[kubelet-check] The HTTP call equal to 'curl -sSL http://localhost:10248/healthz' failed with error: Get http://localhost:10248/healthz: dial tcp [::1]:10248: connectex: No connection could be made because the target machine actively refused it..
+
+Unfortunately, an error has occurred:
+        timed out waiting for the condition
+
+This error is likely caused by:
+        - The kubelet is not running
+        - The kubelet is unhealthy due to a misconfiguration of the node in some way (required cgroups disabled)
+
+If you are on a systemd-powered system, you can try to troubleshoot the error with the following commands:
+        - 'systemctl status kubelet'
+        - 'journalctl -xeu kubelet'
+timed out waiting for the condition
+```
+
 
 ## References
 
@@ -345,7 +400,7 @@ Using [1.10.0](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.
 
 - [x] Add Flannel CNI config after setting up master
 - [x] Join Linux node before Windows
-- [ ] Auto join Linux node - finish testing
+- [ ] Auto join Linux node - need to scp out /vagrant/tmp/join.sh
 - [x] Update captures above to reflect k8s 1.10
   - include updated kubeadm init output, join with tls thumbprint
 - [ ] Get right Windows bits
@@ -353,90 +408,9 @@ Using [1.10.0](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.
   - [ ] flannel.exe (client binary) currently build from https://github.com/rakelkar/flannel/tree/rakelkar/windows-hostgw , goes in c:\k\flannel.exe
   - [ ] flannel.exe (cni plugin), goes in c:\k\cni\flannel.exe, from https://github.com/rakelkar/plugins/tree/windowsCni/plugins/meta/flannel
   - [ ] host-local (cni plugin) - goes in c:\k\cni, from https://github.com/containernetworking/plugins/tree/master/plugins/ipam/host-local 
-  - [x] kubelet - currently build from master. 1.9beta1 will hopefully have all fixes - included in v1.10
-  - [x] kube-proxy - PR needed for `kernelspace` fix - included in v1.10
 
 
 **Bonus points for later**
 - [ ] [Update Vagrant Deployer for Kubernetes Ansible](https://github.com/kubernetes/contrib/tree/master/ansible/vagrant) to work on Hyper-V
 - [ ] [Update CentOS Atomic Host box for Hyper-V](https://wiki.centos.org/SpecialInterestGroup/Atomic/Download)
 
-
-
-
-
-## Building a 1-node Linux-based cluster with Minikube on Windows 10
-
-Minikube sets up a quick 1-node Linux-only Kubernetes cluster in a VM. However, it can't add other nodes such as a Windows host. If you just want to run a few Linux containers to try Kubernetes out, this is a good way to start.
-
-The download links & full guide are at https://github.com/kubernetes/minikube , but here's a brief summary.
-
-
-### Starting up Minikube
-
-```powershell
-minikube start --vm-driver hyperv
-```
-
-```none
-Starting local Kubernetes v1.7.0 cluster...
-Starting VM...
-Getting VM IP address...
-Moving files into cluster...
-Setting up certs...
-Starting cluster components...
-Connecting to cluster...
-Setting up kubeconfig...
-Kubectl is now configured to use the cluster.
-```
-
-### Run first container
-
-```powershell
-kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080
-
->kubectl get pod
-NAME                             READY     STATUS    RESTARTS   AGE
-hello-minikube-180744149-m4m1n   1/1       Running   0          2m
-
-kubectl expose deployment hello-minikube --type=NodePort
-
->minikube service hello-minikube --url
-http://192.168.1.156:31007
-PS 08/05/2017 16:21:32 C:\minikube
->(Invoke-WebRequest -UseBasicParsing $(minikube service hello-minikube --url)).Content
-CLIENT VALUES:
-client_address=172.17.0.1
-command=GET
-real path=/
-query=nil
-request_version=1.1
-request_uri=http://192.168.1.156:8080/
-
-SERVER VALUES:
-server_version=nginx: 1.10.0 - lua: 10001
-
-HEADERS RECEIVED:
-host=192.168.1.156:31007
-user-agent=Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.15063.483
-BODY:
--no body in request-
-PS 08/05/2017 16:22:01 C:\minikube
-
-```
-
-
-
-### Getting access to services running under Minikube
-
-```
->minikube service list
-|-------------|----------------------|----------------------------|
-|  NAMESPACE  |         NAME         |            URL             |
-|-------------|----------------------|----------------------------|
-| default     | hello-minikube       | http://192.168.1.156:31007 |
-| default     | kubernetes           | No node port               |
-| kube-system | kube-dns             | No node port               |
-| kube-system | kubernetes-dashboard | http://192.168.1.156:30000 |
-|-------------|----------------------|----------------------------|
-```

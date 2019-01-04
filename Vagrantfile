@@ -81,7 +81,7 @@ Vagrant.configure("2") do |config|
     end
 
     win1.vm.hostname = "win1"
-    # win1.vm.provision "shell", path: "install-k8s.ps1"
+    win1.vm.provision "shell", path: "install-k8s.ps1"
     # win1.vm.provision "shell", path: "install-flannel.ps1"
     # win1.vm.provision "shell", path: "join-cluster.ps1"
   end
