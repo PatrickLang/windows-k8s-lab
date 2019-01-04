@@ -1,6 +1,31 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+# From https://superuser.com/a/992220
+module LocalCommand
+    class Config < Vagrant.plugin("2", :config)
+        attr_accessor :command
+    end
+
+    class Plugin < Vagrant.plugin("2")
+        name "local_shell"
+
+        config(:local_shell, :provisioner) do
+            Config
+        end
+
+        provisioner(:local_shell) do
+            Provisioner
+        end
+    end
+
+    class Provisioner < Vagrant.plugin("2", :provisioner)
+        def provision
+            result = system "#{config.command}"
+        end
+    end
+end
+
 Vagrant.configure("2") do |config|
 
   config.vm.define "master" do |master|
@@ -20,6 +45,7 @@ Vagrant.configure("2") do |config|
     master.vm.provision "shell", path: "install-docker.sh"
     master.vm.provision "shell", path: "install-k8s.sh"
     master.vm.provision "shell", path: "setup-master.sh"
+    # master.vm.provision "local_shell", command: "vagrant ssh  -c 'cat ~/.kube/config' master | out-file ~/.kube/config -encoding ascii"
   end
 
 
