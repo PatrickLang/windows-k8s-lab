@@ -81,7 +81,14 @@ Vagrant.configure("2") do |config|
     end
 
     win1.vm.hostname = "win1"
-    win1.vm.provision "shell", path: "install-k8s.ps1"
+    win1.vm.provision "file", source: "./tmp/package/containerd.exe", destination: "c:\\Program Files\\ContainerD\\containerd.exe"
+    win1.vm.provision "file", source: "./tmp/package/containerd-shim-runhcs-v1.exe", destination: "c:\\Program Files\\ContainerD\\containerd-shim-runhcs-v1.exe"
+    win1.vm.provision "file", source: "./tmp/package/crictl.exe", destination: "c:\\Program Files\\ContainerD\\crictl.exe"
+    win1.vm.provision "file", source: "./tmp/package/ctr.exe", destination: "c:\\Program Files\\ContainerD\\ctr.exe"
+    win1.vm.provision "file", source: "./tmp/config", destination: "~/.kube/config"
+    win1.vm.provision "shell", inline: "Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/PatrickLang/SDN/containerd-fixes/Kubernetes/containerd/start.ps1 -OutFile ~/start.ps1"
+    # win1.vm.provision "shell", inline: "~/start.ps1 -config ~/.kube/config" # doesn't work, prompts user
+    # win1.vm.provision "shell", path: "install-k8s.ps1"
     # win1.vm.provision "shell", path: "install-flannel.ps1"
     # win1.vm.provision "shell", path: "join-cluster.ps1"
   end

@@ -128,33 +128,7 @@ Normally, the Vagrant synced folders would make this easy but there's a few limi
 ```powershell
 if ((test-path tmp) -eq $false) { mkdir tmp }
 vagrant ssh -c 'cat /vagrant/tmp/join.sh' master | out-file -encoding ascii "tmp/join.sh"
-```
-
-
-### Setting up Flannel on master
-
-Connect to the master with `vagrant ssh master`
-
-Now, get the default flannel configuration and deploy it:
-
-```bash
-curl https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml -o kube-flannel.yml
-kubectl apply -f kube-flannel.yml
-```
-
-Check that it started up with `kubectl get pod --all-namespaces`. Within a minute or two, at least one instance of `kube-flannel-ds` and `kube-dns` should be running. Wait for those before moving on - `kubectl get pod --all-namespaces -w` makes it easy.
-
-```none
-NAMESPACE     NAME                                         READY     STATUS    RESTARTS   AGE
-kube-system   etcd-master.localdomain                      1/1       Running   0          9m
-kube-system   kube-apiserver-master.localdomain            1/1       Running   0          9m
-kube-system   kube-controller-manager-master.localdomain   1/1       Running   0          9m
-kube-system   kube-dns-6f4fd4bdf-m6wv4                     3/3       Running   0          10m
-kube-system   kube-flannel-ds-ph6c2                        1/1       Running   0          1m
-kube-system   kube-flannel-ds-whf4g                        1/1       Running   0          1m
-kube-system   kube-proxy-gt2ht                             1/1       Running   0          10m
-kube-system   kube-proxy-jrvqf                             1/1       Running   0          3m
-kube-system   kube-scheduler-master.localdomain            1/1       Running   0          9m
+vagrant ssh -c 'cat ~/.kube/config' master | out-file "tmp/config" -encoding ascii
 ```
 
 
