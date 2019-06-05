@@ -1,3 +1,6 @@
+KUBEADM_VERSION="v1.15.0-beta.1"
+KUBERNETES_VERSION="v1.14.2"
+
 # from https://kubernetes.io/docs/setup/independent/install-kubeadm/
 
 # Add Kubernetes project repo
@@ -16,7 +19,7 @@ EOF
 setenforce 0
 
 # Install kubelet
-yum install -y kubelet kubeadm
+yum install -y kubelet-$KUBERNETES_VERSION kubeadm-$KUBEADM_VERSION
 systemctl enable kubelet && systemctl start kubelet
 
 # Configure iptables to listen on bridge interface

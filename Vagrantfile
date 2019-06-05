@@ -37,6 +37,7 @@ Vagrant.configure("2") do |config|
       hv.cpus = 2
       hv.linked_clone = true
     end
+    master.vm.network "public_network", bridge: "Default Switch"
     master.vm.synced_folder ".", "/vagrant", type: "rsync",
       rsync__exclude: ".git/"
 
@@ -62,6 +63,7 @@ Vagrant.configure("2") do |config|
       rsync__exclude: ".git/"
 
     nodea.vm.hostname = "nodea.localdomain"
+    nodea.vm.network "public_network", bridge: "Default Switch"
 
     nodea.vm.provision "shell", path: "disable-swap.sh"
     nodea.vm.provision "shell", path: "install-docker.sh"
@@ -80,6 +82,7 @@ Vagrant.configure("2") do |config|
       hv.linked_clone = true
     end
 
+    win1.vm.network "public_network", bridge: "Default Switch"
     win1.vm.hostname = "win1"
     win1.vm.provision "shell", path: "install-k8s.ps1"
     # win1.vm.provision "shell", path: "install-flannel.ps1"
