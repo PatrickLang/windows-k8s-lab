@@ -1,9 +1,10 @@
 # Use a release number from https://github.com/kubernetes/kubernetes/releases/
 $kubernetesVersion = "v1.14.2"
-
+$kubeadmVersion = "v1.15.0-beta.1"
 
 $nodeUrl = "https://dl.k8s.io/$kubernetesVersion/kubernetes-node-windows-amd64.tar.gz" # kubelet, kube-proxy, kubectl, kubeadm
 # $clientUrl = "https://dl.k8s.io/$kubernetesVersion/kubernetes-client-windows-amd64.tar.gz" # kubectl
+$kubeadmUrl = "https://dl.k8s.io/$kubeadmVersion/kubernetes-node-windows-amd64.tar.gz"
 
 $kubeDir = "c:\k"
 
@@ -108,42 +109,21 @@ Get-KubeBinaries {
     del $tempdir -Recurse
 }
 
-function
-New-InfraContainer {
-    Param(
-        [Parameter(Mandatory = $true)][string]
-        $KubeDir
-    )
-    cd $KubeDir
-    $computerInfo = Get-ComputerInfo
-    $windowsBase = if ($computerInfo.WindowsVersion -eq "1709") {
-        "microsoft/nanoserver:1709"
-    }
-    elseif ($computerInfo.WindowsVersion -eq "1803") {
-        "microsoft/nanoserver:1803"
-    }
-    elseif ($computerInfo.WindowsVersion -eq "1809") {
-        "mcr.microsoft.com/windows/nanoserver:1809"
-    }
-    else {
-        "mcr.microsoft.com/nanoserver-insider"
-    }
-
-    "FROM $($windowsBase)" | Out-File -encoding ascii -FilePath Dockerfile
-    "CMD cmd /c ping -t localhost" | Out-File -encoding ascii -FilePath Dockerfile -Append
-    docker build -t kubletwin/pause .
-}
-
 
 Get-KubeBinaries -KubeBinariesURL $nodeUrl -PathInTar "kubernetes\node\bin\*" -KubeDir $kubeDir
 # Get-KubeBinaries -KubeBinariesURL $clientUrl -PathInTar "kubernetes\client\bin\*"
+Get-KubeBinaries -KubeBinariesURL $kubeadmUrl -PathInTar "kubernetes\node\bin\kubeadm.exe" -KubeDir $kubeDir
 
-New-InfraContainer -KubeDir $kubeDir
+# TODO get flannel & winbridge
 
 # Set up kubelet and kube-proxy services
 # TODO use better --kubeconfig path once kubeadm updated
-$kubeletArgs = "--pod-infra-container-image=kubeletwin/pause --kubeconfig=C:\var\lib\kubelet\config.yaml" 
+# PowerShell needs the "" to escape double quotes here, but it gets stripped out.
+# \ is needed for sc.exe to escape quotes
+$kubeletArgs = "--v=6 --log-dir=C:\ProgramData\Kubernetes\logs\kubelet --cert-dir=C:\var\lib\kubelet\pki --cni-bin-dir=C:\ProgramData\Kubernetes\cni --cni-conf-dir=C:\ProgramData\Kubernetes\cni\config --bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf --hostname-override= --pod-infra-container-image=mcr.microsoft.com/k8s/core/pause:1.0.0  --allow-privileged=true --enable-debugging-handlers --cluster-domain=cluster.local --hairpin-mode=promiscuous-bridge --image-pull-progress-deadline=20m  --cgroups-per-qos=false  --logtostderr=false  --network-plugin=cni --enforce-node-allocatable=\""\"" "
+
 # --network-plugin=
 
-sc.exe create kubelet binPath= "$([System.IO.Path]::Combine($kubeDir, "kubelet.exe")) --windows-service $($kubeletArgs)"
-sc.exe create kube-proxy binPath= "$([System.IO.Path]::Combine($kubeDir, "kube-proxy.exe")) --windows-service"
+sc.exe create kubelet start= auto binPath= "$([System.IO.Path]::Combine($kubeDir, "kubelet.exe")) --windows-service $($kubeletArgs)"
+sc.exe create kube-proxy start= auto binPath= "$([System.IO.Path]::Combine($kubeDir, "kube-proxy.exe")) --windows-service"
+
