@@ -1,2 +1,2 @@
-sudo swapoff /swapfile
-sudo rm /swapfile
+sudo swapoff -a
+# TODO remove partition from fstab, devicemapper

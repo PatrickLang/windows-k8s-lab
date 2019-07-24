@@ -1,6 +1,6 @@
 # Use a release number from https://github.com/kubernetes/kubernetes/releases/
-$kubernetesVersion = "v1.14.2"
-$kubeadmVersion = "v1.15.0-beta.1"
+$kubernetesVersion = "v1.15.1"
+$kubeadmVersion = "v1.15.1"
 
 $nodeUrl = "https://dl.k8s.io/$kubernetesVersion/kubernetes-node-windows-amd64.tar.gz" # kubelet, kube-proxy, kubectl, kubeadm
 # $clientUrl = "https://dl.k8s.io/$kubernetesVersion/kubernetes-client-windows-amd64.tar.gz" # kubectl
