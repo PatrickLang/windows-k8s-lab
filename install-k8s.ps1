@@ -117,7 +117,17 @@ Get-KubeBinaries {
 $ENV:GITHUB_SDN_REPOSITORY = "PatrickLang/SDN"
 $ENV:GITHUB_SDN_BRANCH = "kubeadm-containerd"
 
-DownloadFileOverHttp -Url "https://raw.githubusercontent.com/$ENV:GithubSDNRepository/$ENV:GithubSDNBranch/Kubernetes/windows/KubeCluster.ps1" -DestinationPath [System.IO.Path]::Combine($kubeDir, "KubeCluster.ps1")
+DownloadFileOverHttp -Url "https://raw.githubusercontent.com/$ENV:GITHUB_SDN_REPOSITORY/$ENV:GITHUB_SDN_BRANCH/Kubernetes/windows/kubeadm/KubeCluster.ps1" -DestinationPath [System.IO.Path]::Combine($kubeDir, "KubeCluster.ps1")
+DownloadFileOverHttp -Url "https://raw.githubusercontent.com/$ENV:GITHUB_SDN_REPOSITORY/$ENV:GITHUB_SDN_BRANCH/Kubernetes/windows/kubeadm/Kubeclusterbridge.json" -DestinationPath [System.IO.Path]::Combine($kubeDir, "Kubeclusterbridge.json")
+
+$config = Get-Content Kubeclusterbridge.json | ConvertFrom-JSON
+$config.Cri.Name = "containerd"
+
+$config | ConvertTo-Json -Depth 10 | Out-file -Encoding ascii Kubecluster.json
+# TODO: SSH creds into Kubecluster.json
+
+. ./KubeCluster.ps1 -InstallPrerequisite -ConfigFile Kubecluster.json
+# . ./KubeCluster.ps1 -join -ConfigFile Kubecluster.json
 
 # TODO get flannel & winbridge
 
