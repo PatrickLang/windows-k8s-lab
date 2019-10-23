@@ -17,18 +17,9 @@ This tutorial will create a Kubernetes master running in a Linux VM, which can a
 - [Vagrant](https://www.vagrantup.com/downloads.html) 1.9.3 or later for Windows 64-bit
 
 
+### Step 1 - Start the Kubernetes master
 
-### Setting up the Linux master with Centos 7
-
-Get a clean Centos 7 image up
-
-```powershell
-vagrant box add centos/7
-# Choose hyperv provider when prompted
-vagrant init centos/7
-vagrant up
-```
-
+`vagrant up master`
 
 This also has Vagrant provisioner steps to:
 
@@ -36,12 +27,6 @@ This also has Vagrant provisioner steps to:
 - Install latest versions of kubectl & kubeadm from Kubernetes package repo
 - Initialize a simple cluster with `kubeadm init`
 
-> TODO: this gets docker-1.12.6-32.git88a4867.el7.centos.x86_64 - good/bad?
-
-
-### Step 1 - Start the Kubernetes master
-
-`vagrant up master`
 
 The last provisioner step in the `Vagrantfile` runs `install-k8s.sh` which will install all the packages and create a Kubernetes master. These steps were adapted from the [official guide](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/)
 
