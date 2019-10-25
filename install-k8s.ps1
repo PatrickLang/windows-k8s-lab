@@ -123,23 +123,14 @@ DownloadFileOverHttp -Url "https://raw.githubusercontent.com/$ENV:GITHUB_SDN_REP
 
 $config = Get-Content Kubeclusterbridge.json | ConvertFrom-JSON
 $config.Cri.Name = "containerd"
-
+$config.Kubernetes.Master.Username = "vagrant"
+$config.Kubernetes.KubeProxy.Gates = ""
+# TODO: Master IP into kubecluster.json - .Kubernetes.Master.IpAddress
 $config | ConvertTo-Json -Depth 10 | Out-file -Encoding ascii Kubecluster.json
-# TODO: SSH creds into Kubecluster.json
+
 
 . ./KubeCluster.ps1 -InstallPrerequisite -ConfigFile Kubecluster.json
 # . ./KubeCluster.ps1 -join -ConfigFile Kubecluster.json
 
-# TODO get flannel & winbridge
-
-# Set up kubelet and kube-proxy services
-# TODO use better --kubeconfig path once kubeadm updated
-# PowerShell needs the "" to escape double quotes here, but it gets stripped out.
-# \ is needed for sc.exe to escape quotes
-# $kubeletArgs = "--v=6 --log-dir=C:\ProgramData\Kubernetes\logs\kubelet --cert-dir=C:\var\lib\kubelet\pki --cni-bin-dir=C:\ProgramData\Kubernetes\cni --cni-conf-dir=C:\ProgramData\Kubernetes\cni\config --bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf --hostname-override= --pod-infra-container-image=mcr.microsoft.com/k8s/core/pause:1.0.0  --allow-privileged=true --enable-debugging-handlers --cluster-domain=cluster.local --hairpin-mode=promiscuous-bridge --image-pull-progress-deadline=20m  --cgroups-per-qos=false  --logtostderr=false  --network-plugin=cni --enforce-node-allocatable=\""\"" "
-
-# # --network-plugin=
-
-# sc.exe create kubelet start= auto binPath= "$([System.IO.Path]::Combine($kubeDir, "kubelet.exe")) --windows-service $($kubeletArgs)"
-# sc.exe create kube-proxy start= auto binPath= "$([System.IO.Path]::Combine($kubeDir, "kube-proxy.exe")) --windows-service"
-
+# TODO: Pull SSH public key & push into master authorized_keys
+# TODO reboot
