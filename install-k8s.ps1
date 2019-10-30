@@ -1,6 +1,6 @@
 # Use a release number from https://github.com/kubernetes/kubernetes/releases/
-$kubernetesVersion = "v1.15.5"
-$kubeadmVersion = "v1.15.5"
+$kubernetesVersion = "v1.16.2"
+$kubeadmVersion = "v1.16.2"
 
 $nodeUrl = "https://dl.k8s.io/$kubernetesVersion/kubernetes-node-windows-amd64.tar.gz" # kubelet, kube-proxy, kubectl, kubeadm
 # $clientUrl = "https://dl.k8s.io/$kubernetesVersion/kubernetes-client-windows-amd64.tar.gz" # kubectl
@@ -114,12 +114,14 @@ Get-KubeBinaries {
 # # Get-KubeBinaries -KubeBinariesURL $clientUrl -PathInTar "kubernetes\client\bin\*"
 # Get-KubeBinaries -KubeBinariesURL $kubeadmUrl -PathInTar "kubernetes\node\bin\kubeadm.exe" -KubeDir $kubeDir
 
-$ENV:GITHUB_SDN_REPOSITORY = "PatrickLang/SDN"
-$ENV:GITHUB_SDN_BRANCH = "kubeadm-containerd"
+$ENV:GITHUB_TOOLS_REPOSITORY = "PatrickLang/sig-windows-tools" # default kubernetes-sigs/sig-windows-tools
+$ENV:GITHUB_TOOLS_BRANCH = "kubeadm-containerd" # default master
 mkdir $kubeDir
 cd $kubeDir
-DownloadFileOverHttp -Url "https://raw.githubusercontent.com/$ENV:GITHUB_SDN_REPOSITORY/$ENV:GITHUB_SDN_BRANCH/Kubernetes/windows/kubeadm/KubeCluster.ps1" -DestinationPath ([System.IO.Path]::Combine($kubeDir, "KubeCluster.ps1"))
-DownloadFileOverHttp -Url "https://raw.githubusercontent.com/$ENV:GITHUB_SDN_REPOSITORY/$ENV:GITHUB_SDN_BRANCH/Kubernetes/windows/kubeadm/Kubeclusterbridge.json" -DestinationPath ([System.IO.Path]::Combine($kubeDir, "Kubeclusterbridge.json"))
+# https://raw.githubusercontent.com/kubernetes-sigs/sig-windows-tools/master/kubeadm/KubeClusterHelper.psm1
+DownloadFileOverHttp -Url "https://raw.githubusercontent.com/$ENV:GITHUB_TOOLS_REPOSITORY/$ENV:GITHUB_TOOLS_BRANCH/kubeadm/KubeCluster.ps1" -DestinationPath ([System.IO.Path]::Combine($kubeDir, "KubeCluster.ps1"))
+DownloadFileOverHttp -Url "https://raw.githubusercontent.com/$ENV:GITHUB_TOOLS_REPOSITORY/$ENV:GITHUB_TOOLS_BRANCH/kubeadm/KubeClusterHelper.psm1" -DestinationPath ([System.IO.Path]::Combine($kubeDir, "KubeCluster.ps1"))
+DownloadFileOverHttp -Url "https://raw.githubusercontent.com/$ENV:GITHUB_TOOLS_REPOSITORY/$ENV:GITHUB_TOOLS_BRANCH/kubeadm/v1.16.0/Kubeclusterbridge.json" -DestinationPath ([System.IO.Path]::Combine($kubeDir, "Kubeclusterbridge.json"))
 
 $config = Get-Content Kubeclusterbridge.json | ConvertFrom-JSON
 $config.Cri.Name = "containerd"
