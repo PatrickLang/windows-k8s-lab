@@ -134,3 +134,4 @@ $config | ConvertTo-Json -Depth 10 | Out-file -Encoding ascii Kubecluster.json
 
 # TODO: Pull SSH public key & push into master authorized_keys
 # TODO reboot
+# TODO .\KubeCluster.ps1 -join -ConfigFile C:\kubeadm\.kubeadmconfig
