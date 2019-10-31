@@ -134,7 +134,7 @@ $config.Kubernetes.KubeProxy.Gates = ""
 $config | ConvertTo-Json -Depth 10 | Out-file -Encoding ascii Kubecluster.json
 
 
-./KubeCluster.ps1 -InstallPrerequisite -ConfigFile Kubecluster.json
+./KubeCluster.ps1 -Install -ConfigFile Kubecluster.json
 # . ./KubeCluster.ps1 -join -ConfigFile Kubecluster.json
 
 # TODO: Pull SSH public key & push into master authorized_keys
