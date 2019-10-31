@@ -120,18 +120,21 @@ mkdir $kubeDir
 cd $kubeDir
 # https://raw.githubusercontent.com/kubernetes-sigs/sig-windows-tools/master/kubeadm/KubeClusterHelper.psm1
 DownloadFileOverHttp -Url "https://raw.githubusercontent.com/$ENV:GITHUB_TOOLS_REPOSITORY/$ENV:GITHUB_TOOLS_BRANCH/kubeadm/KubeCluster.ps1" -DestinationPath ([System.IO.Path]::Combine($kubeDir, "KubeCluster.ps1"))
-DownloadFileOverHttp -Url "https://raw.githubusercontent.com/$ENV:GITHUB_TOOLS_REPOSITORY/$ENV:GITHUB_TOOLS_BRANCH/kubeadm/KubeClusterHelper.psm1" -DestinationPath ([System.IO.Path]::Combine($kubeDir, "KubeCluster.ps1"))
+DownloadFileOverHttp -Url "https://raw.githubusercontent.com/$ENV:GITHUB_TOOLS_REPOSITORY/$ENV:GITHUB_TOOLS_BRANCH/kubeadm/KubeClusterHelper.psm1" -DestinationPath ([System.IO.Path]::Combine($kubeDir, "KubeClusterHelper.psm1"))
 DownloadFileOverHttp -Url "https://raw.githubusercontent.com/$ENV:GITHUB_TOOLS_REPOSITORY/$ENV:GITHUB_TOOLS_BRANCH/kubeadm/v1.16.0/Kubeclusterbridge.json" -DestinationPath ([System.IO.Path]::Combine($kubeDir, "Kubeclusterbridge.json"))
 
 $config = Get-Content Kubeclusterbridge.json | ConvertFrom-JSON
-$config.Cri.Name = "containerd"
-$config.Kubernetes.Master.Username = "vagrant"
+# $config.Cri.Name = "containerd"
+# TODO: Master IP into kubecluster.json - .Kubernetes.ControlPlane.IpAddress
+# TODO: .Kubernetes.ControlPlane.KubeadmToken
+# TODO: .Kubernetes.ControlPlane.KubeadmCAHash
+$config.Kubernetes.ControlPlane.Username = "vagrant"
 $config.Kubernetes.KubeProxy.Gates = ""
-# TODO: Master IP into kubecluster.json - .Kubernetes.Master.IpAddress
+
 $config | ConvertTo-Json -Depth 10 | Out-file -Encoding ascii Kubecluster.json
 
 
-. ./KubeCluster.ps1 -InstallPrerequisite -ConfigFile Kubecluster.json
+./KubeCluster.ps1 -InstallPrerequisite -ConfigFile Kubecluster.json
 # . ./KubeCluster.ps1 -join -ConfigFile Kubecluster.json
 
 # TODO: Pull SSH public key & push into master authorized_keys
