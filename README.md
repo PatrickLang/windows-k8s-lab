@@ -28,83 +28,41 @@ This also has Vagrant provisioner steps to:
 - Initialize a simple cluster with `kubeadm init`
 
 
-The last provisioner step in the `Vagrantfile` runs `install-k8s.sh` which will install all the packages and create a Kubernetes master. These steps were adapted from the [official guide](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/)
+The last provisioner step in the `Vagrantfile` runs `install-k8s.sh` which will install all the packages, set up a Kubernetes cluster, and configure Flannel as the networking plugin. 
+These steps were adapted from the [official guide](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/)
 
 
 ```none
-[kubeadm] WARNING: kubeadm is in beta, please do not use it for production clusters.
-[init] Using Kubernetes version: v1.7.3
-[init] Using Authorization modes: [Node RBAC]
-[preflight] Running pre-flight checks
-[preflight] Some fatal errors occurred:
-        user is not running as root
-[preflight] If you know what you are doing, you can skip pre-flight checks with `--skip-preflight-checks`
-[vagrant@localhost ~]$ sudo kubeadm init
-[kubeadm] WARNING: kubeadm is in beta, please do not use it for production clusters.
-[init] Using Kubernetes version: v1.7.3
-[init] Using Authorization modes: [Node RBAC]
-[preflight] Running pre-flight checks
-[kubeadm] WARNING: starting in 1.8, tokens expire after 24 hours by default (if you require a non-expiring token use --token-ttl 0)
-[certificates] Generated CA certificate and key.
-[certificates] Generated API server certificate and key.
-[certificates] API Server serving cert is signed for DNS names [localhost.localdomain kubernetes kubernetes.default kubernetes.default.
-svc kubernetes.default.svc.cluster.local] and IPs [10.96.0.1 192.168.1.159]
-[certificates] Generated API server kubelet client certificate and key.
-[certificates] Generated service account token signing key and public key.
-[certificates] Generated front-proxy CA certificate and key.
-[certificates] Generated front-proxy client certificate and key.
-[certificates] Valid certificates and keys now exist in "/etc/kubernetes/pki"
-[kubeconfig] Wrote KubeConfig file to disk: "/etc/kubernetes/controller-manager.conf"
-[kubeconfig] Wrote KubeConfig file to disk: "/etc/kubernetes/scheduler.conf"
-[kubeconfig] Wrote KubeConfig file to disk: "/etc/kubernetes/admin.conf"
-[kubeconfig] Wrote KubeConfig file to disk: "/etc/kubernetes/kubelet.conf"
-[apiclient] Created API client, waiting for the control plane to become ready
-[apiclient] All control plane components are healthy after 66.029744 seconds
-[token] Using token: 11e173.294ee115d41e8df3
-[apiconfig] Created RBAC rules
-[addons] Applied essential addon: kube-proxy
-[addons] Applied essential addon: kube-dns
-
-Your Kubernetes master has initialized successfully!
-
-To start using your cluster, you need to run (as a regular user):
-
-  mkdir -p $HOME/.kube
-  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-  sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
-You should now deploy a pod network to the cluster.
-Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
-  http://kubernetes.io/docs/admin/addons/
-
-You can now join any number of machines by running the following on each node
-as root:
-
-  kubeadm join --token 11e173.294ee115d41e8df3 192.168.1.159:6443
+ master: Your Kubernetes control-plane has initialized successfully!
+    master:
+    master: To start using your cluster, you need to run the following as a regular user:
+    master:
+    master:   mkdir -p $HOME/.kube
+    master:   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    master:   sudo chown $(id -u):$(id -g) $HOME/.kube/config
+    master:
+    master: You should now deploy a pod network to the cluster.
+    master: Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+    master:   https://kubernetes.io/docs/concepts/cluster-administration/addons/
+    master:
+    master: Then you can join any number of worker nodes by running the following on each as root:
+    master:
+    master: kubeadm join 172.17.164.78:6443 --token pscf3u.vpzv01lj754z4b7s \
+    master:     --discovery-token-ca-cert-hash sha256:f1f160335a526dc970e77d924cb10181d73d211c114ed95bd7ea5ba77041a10c
+    master: podsecuritypolicy.policy/psp.flannel.unprivileged created
+    master: clusterrole.rbac.authorization.k8s.io/flannel created
+    master: clusterrolebinding.rbac.authorization.k8s.io/flannel created
+    master: serviceaccount/flannel created
+    master: configmap/kube-flannel-cfg created
+    master: daemonset.apps/kube-flannel-ds-amd64 created
+    master: daemonset.apps/kube-flannel-ds-arm64 created
+    master: daemonset.apps/kube-flannel-ds-arm created
+    master: daemonset.apps/kube-flannel-ds-ppc64le created
+    master: daemonset.apps/kube-flannel-ds-s390x created
 ```
 
-There are two important areas you need to save for later:
+Now, you'll need to copy a few things off that are needed for the next VMs. Ideally this would all work with Vagrant's file sharing, but I haven't been able to get SMB clients to work for the Linux VMs.
 
-- The kube config
-- The kubeadm join line
-
-
-#### Getting the kube config
-First, get a copy of the kubeadm config into your home directory in the Centos VM. Connect with `vagrant ssh master` for the next step
-
-```bash
-mkdir -p $HOME/.kube
-sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-sudo chown $(id -u):$(id -g) $HOME/.kube/config
-```
-
-And confirm it works inside the Centos VM with `kubectl get node`
-
-```none
-[vagrant@localhost ~]$ kubectl get node
-NAME                    STATUS     AGE       VERSION
-localhost.localdomain   NotReady   32m       v1.7.3
-```
 
 #### Getting the kubeadm join script
 
@@ -116,36 +74,9 @@ vagrant ssh -c 'cat /vagrant/tmp/join.sh' master | out-file -encoding ascii "tmp
 ```
 
 
-### Setting up Flannel on master
-
-Connect to the master with `vagrant ssh master`
-
-Now, get the default flannel configuration and deploy it:
-
-```bash
-curl https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml -o kube-flannel.yml
-kubectl apply -f kube-flannel.yml
-```
-
-Check that it started up with `kubectl get pod --all-namespaces`. Within a minute or two, at least one instance of `kube-flannel-ds` and `kube-dns` should be running. Wait for those before moving on - `kubectl get pod --all-namespaces -w` makes it easy.
-
-```none
-NAMESPACE     NAME                                         READY     STATUS    RESTARTS   AGE
-kube-system   etcd-master.localdomain                      1/1       Running   0          9m
-kube-system   kube-apiserver-master.localdomain            1/1       Running   0          9m
-kube-system   kube-controller-manager-master.localdomain   1/1       Running   0          9m
-kube-system   kube-dns-6f4fd4bdf-m6wv4                     3/3       Running   0          10m
-kube-system   kube-flannel-ds-ph6c2                        1/1       Running   0          1m
-kube-system   kube-flannel-ds-whf4g                        1/1       Running   0          1m
-kube-system   kube-proxy-gt2ht                             1/1       Running   0          10m
-kube-system   kube-proxy-jrvqf                             1/1       Running   0          3m
-kube-system   kube-scheduler-master.localdomain            1/1       Running   0          9m
-```
-
-
 ### Managing the Kubernetes cluster from Windows
 
-Now, it's time to get the config file needed out of the VM and onto your Windows machine
+Now, it's time to get the Kubernetes client config file needed out of the VM and onto your Windows machine
 
 ```powershell
 mkdir ~/.kube
@@ -165,12 +96,17 @@ Now, `kubectl get node` should work on the Windows host.
 The `Vagrantfile` also includes another Linux VM called "nodea". After setting up the master, be sure you
 ran the extra step to copy `join.sh` back to the host before going forward.
 
-`vagrant up nodea` will bring up the Linux node. You can check with `kubectl get node`
+`vagrant up nodea` will bring up the Linux node. You can check with `kubectl get node` running from either the master VM, or by running kubectl locally with the config that was copied earlier.
 
-    PS C:\Users\patrick\Source\windows-k8s-lab> kubectl get node
-    NAME                 STATUS    ROLES     AGE       VERSION
-    master.localdomain   Ready     master    8m        v1.10.0
-    nodea.localdomain    Ready     <none>    36s       v1.10.0
+
+```none
+kubectl get node
+NAME                 STATUS   ROLES    AGE     VERSION
+master.localdomain   Ready    master   9m10s   v1.16.2
+nodea.localdomain    Ready    <none>   43s     v1.16.2
+```
+
+It may take a minute or two for `nodea` to show the `Ready` state since it still needs to start the flannel daemonset and kube-proxy.
 
 ### Run a Linux service to test it out
 
@@ -310,92 +246,75 @@ Run `vagrant box add --name WindowsServer2019Docker windows_2019_docker_hyperv.b
 
 ### Joining the Windows node
 
-> TODO: Work in progress, will eventually involve `vagrant up win1`
+This is a bit rough right now, code improvements are welcome!
 
-Current blockers:
+1. First, bring up the Windows VM with `vagrant up win1`. It will ask for your username & password to connect to the SMB files.
+1. Once the VM is up, connect to it with Hyper-V Manager. Log in with user/pass `vagrant`
+1. In the command window, run `powershell`.
+1. Now, run `cd \vagrant ; .\install-k8s.ps1`
 
-- [ ] kubelet not starting as a service
-- [ ] kubeadm adds some configs Windows doesn't support
+    After a few seconds to a minute, it will ask if you want to create a SSH key. Choose yes, and hit enter twice to leave the passphrase blank.
 
-Nice-to-have:
+    ```none
+    Do you wish to generate a SSH Key & Add it to the Linux control-plane node [Y/n] - Default [Y]:
+    Generating public/private rsa key pair.
+    Enter file in which to save the key (C:\Users\vagrant/.ssh/id_rsa):
+    Created directory 'C:\Users\vagrant/.ssh'.
+    Enter passphrase (empty for no passphrase):
+    Enter same passphrase again:
+    ```
 
-- [ ] Move kubeadm created files in c:\etc and c:\var to a better location and lock it down
+    After that, it will drop back to a PowerShell prompt.
 
+1. Run `Get-Content ~/.ssh/id_rsa.pub` to get the SSH key. It will start with `ssh-rsa AAAA...` and end with `vagrant@win1`. Copy that whole string to the clipboard by highlighting, then right clicking the mouse.
 
-Errors from kubelet
+1. Back on the Windows machine, run this, pasting the contents of the clipboard instead of copying the word `<paste>`
 
-```
-PS C:\k> .\kubelet.exe --kubeconfig C:\var\lib\kubelet\config.yaml --pod-infra-container-image=kubeletwin/pause
-F0104 15:04:54.218313    4644 server.go:206] [invalid configuration: CgroupsPerQOS (--cgroups-per-qos) true is not supported on Windows, invalid configuration: EnforceNodeAllocatable (--enforce-node-allocatable) [pods] is not supported on Windows]
-```
+    ```powershell
+    $sshPublicKey = "<paste>"
+    vagrant ssh -c "echo $sshPublicKey >> ~/.ssh/authorized_keys" master
+    ```
 
-Errors from kubeadm
+1. Now, you'll need a few more details from `./tmp/join.sh` - the kubeadm join token, ca-cert-hash, and apiserver IP. Open that up or `cat` it so you can copy/paste from it.
+1. In the Win1 VM - run `notepad c:\k\kubeconfig.json`
 
-```none
-./kubeadm join --token 6mt2m9.v9pkll9a4rqwhuvy  10.0.0.1:6443 --discovery-token-ca-cert-hash sha256:4ec319bbf5c1b5020f77c2b73f64a9bc654c27e622f8abb13976f03a37cc2af2
-[preflight] Running pre-flight checks
-        [WARNING SystemVerification]: this Docker version is not on the list of validated versions: 18.09.0. Latest validated version: 18.06
-        [WARNING Service-Kubelet]: kubelet service is not enabled, please run 'systemctl enable kubelet.service'
-[discovery] Trying to connect to API Server "10.31.104.159:6443"
-[discovery] Created cluster-info discovery client, requesting info from "https://10.31.104.159:6443"
-[discovery] Requesting info from "https://10.31.104.159:6443" again to validate TLS against the pinned public key
-[discovery] Cluster info signature and contents are valid and TLS certificate validates against pinned roots, will use API Server "10.31.104.159:6443"
-[discovery] Successfully established connection with API Server "10.31.104.159:6443"
-[join] Reading configuration from the cluster...
-[join] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -oyaml'
-[kubelet] Downloading configuration for the kubelet from the "kubelet-config-1.13" ConfigMap in the kube-system namespace
-[kubelet-start] Writing kubelet configuration to file "\\var\\lib\\kubelet\\config.yaml"
-W0104 15:10:13.620344    2876 flags.go:82] cannot automatically assign a '--cgroup-driver' value when starting the Kubelet: cgroup driver is not defined in 'docker info'
-[kubelet-start] Writing kubelet environment file with flags to file "\\var\\lib\\kubelet\\kubeadm-flags.env"
-[kubelet-start] Activating the kubelet service
-[kubelet-start] WARNING: unable to start the kubelet service: [couldn't start service: exit status 1]
-[kubelet-start] please ensure kubelet is reloaded and running manually.
-[tlsbootstrap] Waiting for the kubelet to perform the TLS Bootstrap...
-[kubelet-check] Initial timeout of 40s passed.
-[kubelet-check] It seems like the kubelet isn't running or healthy.
-[kubelet-check] The HTTP call equal to 'curl -sSL http://localhost:10248/healthz' failed with error: Get http://localhost:10248/healthz: dial tcp [::1]:10248: connectex: No connection could be made because the target machine actively refused it..
-[kubelet-check] It seems like the kubelet isn't running or healthy.
-[kubelet-check] The HTTP call equal to 'curl -sSL http://localhost:10248/healthz' failed with error: Get http://localhost:10248/healthz: dial tcp [::1]:10248: connectex: No connection could be made because the target machine actively refused it..
-[kubelet-check] It seems like the kubelet isn't running or healthy.
-[kubelet-check] The HTTP call equal to 'curl -sSL http://localhost:10248/healthz' failed with error: Get http://localhost:10248/healthz: dial tcp [::1]:10248: connectex: No connection could be made because the target machine actively refused it..
-[kubelet-check] It seems like the kubelet isn't running or healthy.
-[kubelet-check] The HTTP call equal to 'curl -sSL http://localhost:10248/healthz' failed with error: Get http://localhost:10248/healthz: dial tcp [::1]:10248: connectex: No connection could be made because the target machine actively refused it..
+    Scroll down to the "ControlPlane" section, and copy in the missing info from join.sh:
 
-Unfortunately, an error has occurred:
-        timed out waiting for the condition
+    ```
+                        "ControlPlane":  {
+                                                "IpAddress":  "kubemasterIP",
+                                                "Username":  "vagrant",
+                                                "KubeadmToken":  "token",
+                                                "KubeadmCAHash":  "discovery-token-ca-cert-hash"
+                                            },
+    ```
 
-This error is likely caused by:
-        - The kubelet is not running
-        - The kubelet is unhealthy due to a misconfiguration of the node in some way (required cgroups disabled)
+    Save & close notepad.
 
-If you are on a systemd-powered system, you can try to troubleshoot the error with the following commands:
-        - 'systemctl status kubelet'
-        - 'journalctl -xeu kubelet'
-timed out waiting for the condition
-```
+1. Now run `.\KubeCluster.ps1 -ConfigFile .\Kubecluster.json -join` in the VM.
+
+    It will connect to get needed info from the master VM. type `yes` then enter when prompted
+
+    ```none
+    The authenticity of host '172.17.164.78 (172.17.164.78)' can't be established.
+    ECDSA key fingerprint is SHA256:l2+PM2C2GoSuxIjjTb6HpWDJtZspghwrJsI/qOFwHzc.
+    Are you sure you want to continue connecting (yes/no)?
+    ```
+
+    After a few seconds to minutes, it will show that it has joined the cluster:
+
+    ```none
+
+    Waiting for service [Kubeproxy] to be running
+    NAME                 STATUS   ROLES    AGE   VERSION
+    master.localdomain   Ready    master   39m   v1.16.2
+    nodea.localdomain    Ready    <none>   31m   v1.16.2
+    win1                 Ready    <none>   20s   v1.16.2
+    Node win1 successfully joined the cluster
+    ```
 
 
 ## References
 
-- [Getting Started Guide - Windows](https://kubernetes.io/docs/getting-started-guides/windows/)
+- [Guide for adding Windows Nodes in Kubernetes](https://kubernetes.io/docs/setup/production-environment/windows/user-guide-windows-nodes/)
 - [Kubernetes the Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way)
-
-
-## Work in progress - remaining steps
-
-- [x] Add Flannel CNI config after setting up master
-- [x] Join Linux node before Windows
-- [ ] Auto join Linux node - need to scp out /vagrant/tmp/join.sh
-- [x] Update captures above to reflect k8s 1.10
-  - include updated kubeadm init output, join with tls thumbprint
-- [ ] Get right Windows bits
-  - [x] kubectl
-  - [ ] flannel.exe (client binary) currently build from https://github.com/rakelkar/flannel/tree/rakelkar/windows-hostgw , goes in c:\k\flannel.exe
-  - [ ] flannel.exe (cni plugin), goes in c:\k\cni\flannel.exe, from https://github.com/rakelkar/plugins/tree/windowsCni/plugins/meta/flannel
-  - [ ] host-local (cni plugin) - goes in c:\k\cni, from https://github.com/containernetworking/plugins/tree/master/plugins/ipam/host-local 
-
-
-**Bonus points for later**
-- [ ] [Update Vagrant Deployer for Kubernetes Ansible](https://github.com/kubernetes/contrib/tree/master/ansible/vagrant) to work on Hyper-V
-- [ ] [Update CentOS Atomic Host box for Hyper-V](https://wiki.centos.org/SpecialInterestGroup/Atomic/Download)
-

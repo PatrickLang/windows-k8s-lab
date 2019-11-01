@@ -73,7 +73,7 @@ Vagrant.configure("2") do |config|
 
 
   config.vm.define "win1" do |win1|
-    win1.vm.box = "WindowsServer2019Docker-Jul19"
+    win1.vm.box = "WindowsServer2019Docker"
     win1.vm.provider "hyperv" do |hv|
       hv.vmname = "K8s-win1"
       hv.memory = 4096
@@ -84,9 +84,7 @@ Vagrant.configure("2") do |config|
 
     win1.vm.network "public_network", bridge: "Default Switch"
     win1.vm.hostname = "win1"
-    # win1.vm.provision "shell", path: "install-k8s.ps1"
-    # win1.vm.provision "shell", path: "install-flannel.ps1"
-    # win1.vm.provision "shell", path: "join-cluster.ps1"
+    # win1.vm.provision "shell", path: "scripts needed"
   end
 
 end
