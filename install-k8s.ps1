@@ -114,8 +114,8 @@ Get-KubeBinaries {
 # # Get-KubeBinaries -KubeBinariesURL $clientUrl -PathInTar "kubernetes\client\bin\*"
 # Get-KubeBinaries -KubeBinariesURL $kubeadmUrl -PathInTar "kubernetes\node\bin\kubeadm.exe" -KubeDir $kubeDir
 
-$ENV:GITHUB_TOOLS_REPOSITORY = "PatrickLang/sig-windows-tools" # default kubernetes-sigs/sig-windows-tools
-$ENV:GITHUB_TOOLS_BRANCH = "kubeadm-containerd" # default master
+$ENV:GITHUB_TOOLS_REPOSITORY = "kubernetes-sigs/sig-windows-tools" # default kubernetes-sigs/sig-windows-tools
+$ENV:GITHUB_TOOLS_BRANCH = "master" # default master
 mkdir $kubeDir
 cd $kubeDir
 # https://raw.githubusercontent.com/kubernetes-sigs/sig-windows-tools/master/kubeadm/KubeClusterHelper.psm1
