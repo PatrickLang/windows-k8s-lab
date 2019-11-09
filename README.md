@@ -253,6 +253,10 @@ This is a bit rough right now, code improvements are welcome!
 1. In the command window, run `powershell`.
 1. Now, run `cd \vagrant ; .\install-k8s.ps1`
 
+> Note: if this fails, one workaround is to just copy the 1 file needed into the VM from the host:
+> `Copy-VMFile -VMName K8s-win1 -SourcePath .\install-k8s.ps1 -DestinationPath c:\Users\vagrant\install-k8s.ps1 -FileSource Host`
+> Then run `.\install-k8s.ps1`
+
     After a few seconds to a minute, it will ask if you want to create a SSH key. Choose yes, and hit enter twice to leave the passphrase blank.
 
     ```none
