@@ -124,7 +124,7 @@ DownloadFileOverHttp -Url "https://raw.githubusercontent.com/$ENV:GITHUB_TOOLS_R
 DownloadFileOverHttp -Url "https://raw.githubusercontent.com/$ENV:GITHUB_TOOLS_REPOSITORY/$ENV:GITHUB_TOOLS_BRANCH/kubeadm/v1.16.0/Kubeclusterbridge.json" -DestinationPath ([System.IO.Path]::Combine($kubeDir, "Kubeclusterbridge.json"))
 
 $config = Get-Content Kubeclusterbridge.json | ConvertFrom-JSON
-# $config.Cri.Name = "containerd"
+$config.Cri.Name = "containerd"
 # TODO: Master IP into kubecluster.json - .Kubernetes.ControlPlane.IpAddress
 # TODO: .Kubernetes.ControlPlane.KubeadmToken
 # TODO: .Kubernetes.ControlPlane.KubeadmCAHash
@@ -135,7 +135,8 @@ $config | ConvertTo-Json -Depth 10 | Out-file -Encoding ascii Kubecluster.json
 
 
 ./KubeCluster.ps1 -Install -ConfigFile Kubecluster.json
-# . ./KubeCluster.ps1 -join -ConfigFile Kubecluster.json
+# Reboot
+# ./KubeCluster.ps1 -join -ConfigFile Kubecluster.json
 
 # TODO: Pull SSH public key & push into master authorized_keys
 # TODO reboot
